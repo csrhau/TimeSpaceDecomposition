@@ -22,3 +22,7 @@
 
 #vim cruft
 *.swp
+
+#build directory
+reference_deqn/build/
+custom_deqn/build/
