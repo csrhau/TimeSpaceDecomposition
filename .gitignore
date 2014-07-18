@@ -26,3 +26,7 @@
 #build directory
 reference_deqn/build/
 custom_deqn/build/
+
+# Visualisation stuff
+*.vtk
+*.visit
