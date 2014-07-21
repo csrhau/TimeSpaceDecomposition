@@ -6,6 +6,8 @@
 #include <fstream>
 #include <cstdlib>
 
+typedef std::map<std::string, std::string>::const_iterator config_iterator;
+
 ConfigFile::ConfigFile(std::string& filename_) : _filename(filename_) {
   std::ifstream ifs(filename_.c_str());
   if (!ifs.good()) {
@@ -55,3 +57,17 @@ ConfigFile::ConfigFile(std::string& filename_) : _filename(filename_) {
 }
 
 ConfigFile::~ConfigFile() {}
+
+void ConfigFile::print_config() const {
+  std::cout << "Run Config:";
+  config_iterator it = _config_mapping.begin();
+  config_iterator itEnd = _config_mapping.end();
+  for (; it != itEnd; ++it) {
+    std::cout << "\n\t" << it->first << " " << it->second;
+  }
+  std::cout << std::endl;
+}
+
+// getter template function defined in header file.
+// template <typename T>
+// T ConfigFile::get_or_default(const std::string& name, const T& dfault) const;
