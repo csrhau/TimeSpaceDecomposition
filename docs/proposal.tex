@@ -1,0 +1,59 @@
+\documentclass[10pt, a4paper, conference]{IEEEtran}
+\usepackage{graphicx}
+\title{Efficient Message Passing Schemes}                            
+\author{
+	\IEEEauthorblockN{Stephen I. Roberts}
+	\IEEEauthorblockA{Department of Computer Science\\
+					 The University of Warwick}
+} 
+\date{}
+\hyphenation{scaling}
+\begin{document}                                                                
+\maketitle                                                                    
+\begin{abstract}
+Stencil codes
+\end{abstract}
+
+\section{Introduction}
+
+orem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus semper sem non faucibus dictum. Nam dapibus, odio eget feugiat luctus, metus nibh semper risus, non laoreet ante dolor et elit. Donec venenatis fringilla ipsum, interdum rhoncus orci tincidunt id. Duis sagittis mauris vitae posuere lacinia. Nullam tempus dui eget lorem molestie, vel pharetra lacus elementum. Pellentesque semper, nisi eget iaculis luctus, erat ligula rhoncus dui, ac ornare mi tortor a felis. Proin porta laoreet tempus. Aliquam velit odio, hendrerit ac aliquam in, pretium nec tellus. Phasellus viverra ullamcorper erat, eu gravida neque lobortis sit amet. Pellentesque rutrum purus eget tempus elementum. Nulla ac mauris egestas, cursus mauris id, cursus quam. Integer porta euismod ante, in tempus nibh sollicitudin non.
+
+Suspendisse auctor suscipit nunc, in tincidunt ligula. Maecenas pharetra malesuada nibh. Donec convallis mi nec auctor aliquet. Nulla commodo ac metus sit amet vestibulum. Fusce ac gravida enim. Mauris laoreet, sapien sed consectetur vulputate, elit quam posuere risus, sed sodales mi sem ut nisl. Cras eu sollicitudin neque. Morbi fermentum dolor dolor, eu suscipit neque rhoncus eget. Vivamus sem nisi, sagittis quis accumsan ut, gravida quis nulla. Praesent odio libero, sagittis id dolor non, volutpat elementum diam. Cras posuere nibh ac lorem facilisis iaculis. Quisque justo nibh, viverra eget leo pretium, accumsan consequat dui.
+
+\begin{figure} 
+\centering 
+\includegraphics[width=2.5in]{graphics/2d_von_neumann_stencil.pdf}
+    \caption{4 point 2D von Neumann style stencil}
+    \label{fig:von_neumann_stencil}
+\end{figure} 
+
+
+Quisque sodales lacus a elit semper, sit amet vehicula quam commodo. Maecenas ac nunc at erat fermentum faucibus. Ut sit amet elit at ligula gravida molestie et ut tortor. Sed ac justo nec lacus placerat adipiscing sed vitae ipsum. Proin non magna id nisl mollis pharetra vitae non justo. Proin rhoncus lacinia mi, ultricies tincidunt sem volutpat ac. Sed suscipit vel lectus eget adipiscing. Praesent non nisl vel leo rutrum tincidunt. Nam pretium semper turpis ut tempus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Etiam posuere arcu eu odio lobortis vulputate. Nulla felis tortor, euismod vel mi ut, auctor mollis odio. Sed quis lorem condimentum, vulputate purus ac, feugiat arcu. Vestibulum pharetra nisi in lacus tempus, eu blandit magna iaculis. Etiam ut ultricies erat.
+
+Maecenas a lorem et mauris fringilla tempor placerat vitae nisl. Aliquam vulputate laoreet sapien. Mauris dapibus pharetra enim, ac lacinia quam tristique pulvinar. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus pulvinar scelerisque purus. Nunc tempor fringilla libero in consectetur. Praesent tempus ligula in nisl tristique, at iaculis orci facilisis. Fusce fermentum tortor ligula, vel sodales mauris gravida ac. Mauris tristique, mauris nec varius adipiscing, tortor sapien feugiat sapien, id commodo sapien odio et augue.
+
+orem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus semper sem non faucibus dictum. Nam dapibus, odio eget feugiat luctus, metus nibh semper risus, non laoreet ante dolor et elit. Donec venenatis fringilla ipsum, interdum rhoncus orci tincidunt id. Duis sagittis mauris vitae posuere lacinia. Nullam tempus dui eget lorem molestie, vel pharetra lacus elementum. Pellentesque semper, nisi eget iaculis luctus, erat ligula rhoncus dui, ac ornare mi tortor a felis. Proin porta laoreet tempus. Aliquam velit odio, hendrerit ac aliquam in, pretium nec tellus. Phasellus viverra ullamcorper erat, eu gravida neque lobortis sit amet. Pellentesque rutrum purus eget tempus elementum. Nulla ac mauris egestas, cursus mauris id, cursus quam. Integer porta euismod ante, in tempus nibh sollicitudin non.
+
+Suspendisse auctor suscipit nunc, in tincidunt ligula. Maecenas pharetra malesuada nibh. Donec convallis mi nec auctor aliquet. Nulla commodo ac metus sit amet vestibulum. Fusce ac gravida enim. Mauris laoreet, sapien sed consectetur vulputate, elit quam posuere risus, sed sodales mi sem ut nisl. Cras eu sollicitudin neque. Morbi fermentum dolor dolor, eu suscipit neque rhoncus eget. Vivamus sem nisi, sagittis quis accumsan ut, gravida quis nulla. Praesent odio libero, sagittis id dolor non, volutpat elementum diam. Cras posuere nibh ac lorem facilisis iaculis. Quisque justo nibh, viverra eget leo pretium, accumsan consequat dui.
+
+Quisque sodales lacus a elit semper, sit amet vehicula quam commodo. Maecenas ac nunc at erat fermentum faucibus. Ut sit amet elit at ligula gravida molestie et ut tortor. Sed ac justo nec lacus placerat adipiscing sed vitae ipsum. Proin non magna id nisl mollis pharetra vitae non justo. Proin rhoncus lacinia mi, ultricies tincidunt sem volutpat ac. Sed suscipit vel lectus eget adipiscing. Praesent non nisl vel leo rutrum tincidunt. Nam pretium semper turpis ut tempus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Etiam posuere arcu eu odio lobortis vulputate. Nulla felis tortor, euismod vel mi ut, auctor mollis odio. Sed quis lorem condimentum, vulputate purus ac, feugiat arcu. Vestibulum pharetra nisi in lacus tempus, eu blandit magna iaculis. Etiam ut ultricies erat.
+
+Maecenas a lorem et mauris fringilla tempor placerat vitae nisl. Aliquam vulputate laoreet sapien. Mauris dapibus pharetra enim, ac lacinia quam tristique pulvinar. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus pulvinar scelerisque purus. Nunc tempor fringilla libero in consectetur. Praesent tempus ligula in nisl tristique, at iaculis orci facilisis. Fusce fermentum tortor ligula, vel sodales mauris gravida ac. Mauris tristique, mauris nec varius adipiscing, tortor sapien feugiat sapien, id commodo sapien odio et augue.
+
+orem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus semper sem non faucibus dictum. Nam dapibus, odio eget feugiat luctus, metus nibh semper risus, non laoreet ante dolor et elit. Donec venenatis fringilla ipsum, interdum rhoncus orci tincidunt id. Duis sagittis mauris vitae posuere lacinia. Nullam tempus dui eget lorem molestie, vel pharetra lacus elementum. Pellentesque semper, nisi eget iaculis luctus, erat ligula rhoncus dui, ac ornare mi tortor a felis. Proin porta laoreet tempus. Aliquam velit odio, hendrerit ac aliquam in, pretium nec tellus. Phasellus viverra ullamcorper erat, eu gravida neque lobortis sit amet. Pellentesque rutrum purus eget tempus elementum. Nulla ac mauris egestas, cursus mauris id, cursus quam. Integer porta euismod ante, in tempus nibh sollicitudin non.
+
+Suspendisse auctor suscipit nunc, in tincidunt ligula. Maecenas pharetra malesuada nibh. Donec convallis mi nec auctor aliquet. Nulla commodo ac metus sit amet vestibulum. Fusce ac gravida enim. Mauris laoreet, sapien sed consectetur vulputate, elit quam posuere risus, sed sodales mi sem ut nisl. Cras eu sollicitudin neque. Morbi fermentum dolor dolor, eu suscipit neque rhoncus eget. Vivamus sem nisi, sagittis quis accumsan ut, gravida quis nulla. Praesent odio libero, sagittis id dolor non, volutpat elementum diam. Cras posuere nibh ac lorem facilisis iaculis. Quisque justo nibh, viverra eget leo pretium, accumsan consequat dui.
+
+Quisque sodales lacus a elit semper, sit amet vehicula quam commodo. Maecenas ac nunc at erat fermentum faucibus. Ut sit amet elit at ligula gravida molestie et ut tortor. Sed ac justo nec lacus placerat adipiscing sed vitae ipsum. Proin non magna id nisl mollis pharetra vitae non justo. Proin rhoncus lacinia mi, ultricies tincidunt sem volutpat ac. Sed suscipit vel lectus eget adipiscing. Praesent non nisl vel leo rutrum tincidunt. Nam pretium semper turpis ut tempus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Etiam posuere arcu eu odio lobortis vulputate. Nulla felis tortor, euismod vel mi ut, auctor mollis odio. Sed quis lorem condimentum, vulputate purus ac, feugiat arcu. Vestibulum pharetra nisi in lacus tempus, eu blandit magna iaculis. Etiam ut ultricies erat.
+
+Maecenas a lorem et mauris fringilla tempor placerat vitae nisl. Aliquam vulputate laoreet sapien. Mauris dapibus pharetra enim, ac lacinia quam tristique pulvinar. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus pulvinar scelerisque purus. Nunc tempor fringilla libero in consectetur. Praesent tempus ligula in nisl tristique, at iaculis orci facilisis. Fusce fermentum tortor ligula, vel sodales mauris gravida ac. Mauris tristique, mauris nec varius adipiscing, tortor sapien feugiat sapien, id commodo sapien odio et augue.
+
+
+\begin{enumerate}
+\item We demonstrate that power consumption is closely related to CPU frequency and a small subset of key performance events.
+\item We implement a framework for deriving processor-specific power models. This consists of a series of self-tuning micro-benchmarks designed to stress various CPU subsystems whilst measuring power consumption and a regression tool which builds a model from their output.
+\item We use Intel Precise Event Based Sampling (PEBS) to estimate the rates at which different lines of code trigger performance events for a number of proxy applications and benchmarks. This information is then processed by our model to yield an instruction by instruction breakdown of energy consumption for each code.
+\item We estimate the potential impact which variations in code can have on total power consumption by using our tools to investigate a range of representative applications.
+\end{enumerate}
+
+\end{document}

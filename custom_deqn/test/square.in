@@ -1,8 +1,8 @@
 debug true
 n_dimensions 2
-dimension_sizes 100 100
-dimension_min 0.0 0.0
-dimension_max 100.0 100.0
+dimension_cells 20 20
+min_coordinates 0.0 0.0
+max_coordinates 100.0 100.0
 start_time 0.0
 end_time 2.0
 timestep 0.2

@@ -15,7 +15,11 @@ class ConfigFile {
    ConfigFile(std::string& filename_);
    ~ConfigFile();
    void print_config() const;
+   const std::string& get_filename() const;
 
+
+
+   // Config getters
    // General Case
    template <typename T>
    T get_or_default(const std::string& name, const T& dfault) const {
@@ -74,9 +78,8 @@ class ConfigFile {
     return values;
   }
 
-
  private:
-   std::string _filename;
+   const std::string _filename;
    std::map<std::string, std::string> _config_mapping;
 
 };

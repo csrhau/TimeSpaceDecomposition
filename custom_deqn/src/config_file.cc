@@ -28,7 +28,7 @@ ConfigFile::ConfigFile(std::string& filename_) : _filename(filename_) {
     std::string value;
     std::getline(iss, value);
     // Remove comments
-    size_t pos = value.find_first_of('#');
+    std::size_t pos = value.find_first_of('#');
     if (pos != std::string::npos) {
       value.erase(pos);
     }
@@ -67,6 +67,10 @@ void ConfigFile::print_config() const {
   }
   std::cout << std::endl;
 }
+
+const std::string& ConfigFile::get_filename() const {
+  return _filename;
+} 
 
 // getter template function defined in header file.
 // template <typename T>
