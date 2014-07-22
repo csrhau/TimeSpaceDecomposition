@@ -16,7 +16,7 @@ BINARY := $(BUILDDIR)/$(PRODUCT)
 # gcc flags:
 CXX := g++
 CXXFLAGS_DEBUG := -g -DDEBUG -Wall
-CXXFLAGS_OPT := -O3
+CXXFLAGS_OPT := -O3 -pg
 CXXFLAGS_OPENMP := -fopenmp
 
 LD := $(CXX)
@@ -27,7 +27,8 @@ CXXFLAGS := $(CXXFLAGS_OPT) $(CXXFLAGS_DEBUG) $(CPPFLAGS)
 
 # add openmp flags (comment out for serial build)
 CXXFLAGS += $(CXXFLAGS_OPENMP)
-LDFLAGS += $(CXXFLAGS_OPENMP)
+LDFLAGS += $(CXXFLAGS_OPENMP) 
+LDFLAGS += -pg
 
 all : $(BINARY)
 

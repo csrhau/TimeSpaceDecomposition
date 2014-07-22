@@ -6,11 +6,13 @@
 #include "calculation.h"
 #include "mesh.h"
 
-static void print_mesh(Mesh* _mesh) {
+namespace {
+// TODO move into common header file
+#define POLY2(i, j, ispan) ((i) + ((j)  * (ispan)))
+void print_mesh(Mesh* _mesh) {
   double* space = _mesh->get_u0();
   const std::vector<int>& padded_sizes = _mesh->get_padded_sizes();
   for (int j = 0; j < padded_sizes[1]; ++j) {
-
     for (int i = 0; i < padded_sizes[0]; ++i) {
       std::cout << "\t" <<  space[i + j * padded_sizes[0]]<<",";
     }
@@ -18,6 +20,23 @@ static void print_mesh(Mesh* _mesh) {
   }
 }
 
+static void print_total_temp(Mesh* _mesh) {
+  double *u0 = _mesh->get_u0();
+  int x_min = _mesh->get_from_index(0);
+  int y_min = _mesh->get_from_index(1);
+  int x_max = _mesh->get_to_index(0);
+  int y_max = _mesh->get_to_index(1);
+  int x_span = _mesh->get_dimension_span(0);
+  double temp = 0;
+  for (int j = y_min; j < y_max; ++j) { //TODO deal with boundary
+    for (int i = x_min; i < x_max; ++i) {
+      int center = POLY2(i, j, x_span);
+      temp += u0[center];
+    }
+  }
+  std::cout << "Total temperature: " << temp << std::endl;
+}
+} // File-scoped
 
 Experiment::Experiment(const ConfigFile * const config_) : _config(config_),
                                                            _step(0) {
@@ -33,9 +52,6 @@ Experiment::Experiment(const ConfigFile * const config_) : _config(config_),
   _calculation = new Calculation(_config, _mesh);
   DataSource ds(_config);
   ds.populate(_mesh);
-  if (_debug) {
-    print_mesh(_mesh);
-  }
 }
 
 Experiment::~Experiment() {
@@ -49,16 +65,22 @@ void Experiment::run() {
     std::cout << "+++++++++++++++++++++++++++++\n"
                  "+ RUN COMMENCING - STAND BY +\n"
                  "+++++++++++++++++++++++++++++" << std::endl;
+    print_mesh(_mesh);
   }
   // Main application Loop
   for (double t_now = _t_start; t_now < _t_end; t_now += _del_t) {
-    _calculation->step();
+    _calculation->step(_del_t);
+    _mesh->update_boundaries();
     _mesh->step();
     ++_step;
     if (_step % _visualization_rate == 0 && t_now < _t_end) {
+      if (_debug) print_mesh(_mesh);
+      std::cout << "TODO: Output visualization file" << std::endl;
     }
     if (_debug) {
       std::cout << "Step " << _step << " complete" << std::endl;
+      print_total_temp(_mesh);
+
     }
   }
   if (_debug) {
