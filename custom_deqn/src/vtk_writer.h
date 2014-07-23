@@ -1,9 +1,9 @@
-#ifndef VTKWRITER_H_
-#define VTKWRITER_H_
+#ifndef VTKWRITER_H
+#define VTKWRITER_H
 
 #include <string>
-#include "Mesh.h"
 
+class Mesh;
 class VtkWriter {
     private:
         std::string dump_basename;

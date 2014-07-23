@@ -147,6 +147,10 @@ double Mesh::get_dimension_delta(int dim_) const {
   return  _dimension_deltas.at(dim_);
 }
 
+int Mesh::get_internal_cells(int dim_) const {
+  return _dim_cells.at(dim_);
+}
+
 // Number of cells for a "row" of the space - n.b. includes padding
 int Mesh::get_dimension_span(int dim_) const {
   return _padded_sizes.at(dim_);

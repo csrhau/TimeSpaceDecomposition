@@ -4,7 +4,9 @@
 #include "config_file.h"
 #include "data_source.h"
 #include "calculation.h"
+
 #include "mesh.h"
+#include "vtk_writer.h"
 
 namespace {
 // TODO move into common header file
@@ -60,6 +62,7 @@ Experiment::~Experiment() {
 }
 
 void Experiment::run() {
+  VtkWriter writer(_name, _mesh);
   std::cout << "experiment running!!" << std::endl;
   if (_debug) {
     std::cout << "+++++++++++++++++++++++++++++\n"
@@ -67,15 +70,18 @@ void Experiment::run() {
                  "+++++++++++++++++++++++++++++" << std::endl;
     print_mesh(_mesh);
   }
+  // Initial dump
+  writer.write(0, 0.0);
   // Main application Loop
-  for (double t_now = _t_start; t_now < _t_end; t_now += _del_t) {
+  double t_now;
+  for (t_now = _t_start; t_now < _t_end; t_now += _del_t) {
     _calculation->step(_del_t);
     _mesh->update_boundaries();
     _mesh->step();
     ++_step;
     if (_step % _visualization_rate == 0 && t_now < _t_end) {
       if (_debug) print_mesh(_mesh);
-      std::cout << "TODO: Output visualization file" << std::endl;
+      writer.write(_step, t_now);
     }
     if (_debug) {
       std::cout << "Step " << _step << " complete" << std::endl;
@@ -83,9 +89,12 @@ void Experiment::run() {
 
     }
   }
+  // Final dump
+  writer.write(_step, t_now);
   if (_debug) {
     std::cout << "+++++++++++++++++++++++++++++\n"
                  "+ RUN FINISHED SUCCESSFULLY +\n"
                  "+++++++++++++++++++++++++++++" << std::endl;
   }
+
 }

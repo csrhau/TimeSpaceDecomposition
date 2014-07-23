@@ -1,9 +1,12 @@
-#include "VtkWriter.h"
+#include "vtk_writer.h"
 
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
+#include "mesh.h"
+
+#define POLY2(i, j, ispan) ((i) + ((j)  * (ispan)))
 VtkWriter::VtkWriter(std::string basename, Mesh* mesh) :
     dump_basename(basename),
     vtk_header("# vtk DataFile Version 3.0\nvtk output\nASCII\n"),
@@ -24,14 +27,13 @@ VtkWriter::VtkWriter(std::string basename, Mesh* mesh) :
 
 void VtkWriter::write(int step, double time)
 {
-    int rank;
-    int nprocs;
-
     // Master process writes out the .visit file to coordinate the .vtk files
     std::ofstream file;
     std::stringstream fname;
 
     fname << dump_basename << ".visit";
+
+    std::cout << "GREPTARGET writing to " << std::endl;
 
     std::string file_name = fname.str();
 
@@ -75,26 +77,26 @@ void VtkWriter::writeVtk(int step, double time)
     file << time << std::endl;
     file << "CYCLE 1 1 int" << std::endl;
     file << step << std::endl;
-    if (mesh->getDim() == 2) {
-        file << "DIMENSIONS " << mesh->getNx()[0]+1
-            << " " << mesh->getNx()[1]+1
+    if (mesh->n_dimensions() == 2) {
+        file << "DIMENSIONS " << mesh->get_internal_cells(0)+1
+            << " " << mesh->get_internal_cells(1)+1
             << " 1" << std::endl;
-    } else if (mesh->getDim() == 3) {
-        file << "DIMENSIONS " << mesh->getNx()[0]+1
-            << " " << mesh->getNx()[1]+1
-            << " " << mesh->getNx()[2]+1 << std::endl;
+    } else if (mesh->n_dimensions() == 3) {
+        file << "DIMENSIONS " << mesh->get_internal_cells(0)+1
+            << " " << mesh->get_internal_cells(1)+1
+            << " " << mesh->get_internal_cells(2)+1 << std::endl;
     }
 
-    file << "X_COORDINATES " << mesh->getNx()[0]+1 << " float" << std::endl;
-    for(int i = 1; i <= mesh->getNx()[0]+1; i++) {
-        file << mesh->getCellX()[i] << " ";
+    file << "X_COORDINATES " << mesh->get_internal_cells(0)+1 << " float" << std::endl;
+    for(int i = 0; i < mesh->get_internal_cells(0)+1; ++i) {
+        file << i * mesh->get_dimension_delta(0) << " ";
     }
 
     file << std::endl;
 
-    file << "Y_COORDINATES " << mesh->getNx()[1]+1 << " float" << std::endl;
-    for(int j = 1; j <= mesh->getNx()[1]+1; j++) {
-        file << mesh->getCellY()[j] << " ";
+    file << "Y_COORDINATES " << mesh->get_internal_cells(1)+1 << " float" << std::endl;
+    for(int j = 0; j < mesh->get_internal_cells(1)+1; ++j) {
+        file << j * mesh->get_dimension_delta(1) << " ";
     }
 
     file << std::endl;
@@ -102,15 +104,17 @@ void VtkWriter::writeVtk(int step, double time)
     file << "Z_COORDINATES 1 float" << std::endl;
     file << "0.0000" << std::endl;
 
-    file << "CELL_DATA " << mesh->getNx()[0] * mesh->getNx()[1] << std::endl;
+    file << "CELL_DATA " << ((mesh->get_to_index(0) - mesh->get_from_index(0)) * (mesh->get_to_index(1) - mesh->get_from_index(1))) << std::endl;
 
     file << "FIELD FieldData 1" << std::endl;
 
-    file << "u 1 " << mesh->getNx()[0]*mesh->getNx()[1] << " double" << std::endl;
+    file << "u 1 " << ((mesh->get_to_index(0) - mesh->get_from_index(0)) * (mesh->get_to_index(1) - mesh->get_from_index(1))) << " double" <<  std::endl;
 
-    for(int j=1; j <= mesh->getNx()[1]; j++) {
-        for (int i = 1; i <= mesh->getNx()[0]; i++) {
-            file << mesh->getU0()[i + j*(mesh->getNx()[0]+2)] << " ";
+    int x_span = mesh->get_dimension_span(0);
+    for(int j=mesh->get_from_index(1); j < mesh->get_to_index(1); ++j) {
+        for (int i = mesh->get_from_index(0); i < mesh->get_to_index(0); ++i) {
+            std::cout << "Writing out (" << i << "," << j << ") " << std::endl;
+            file << mesh->get_u0()[POLY2(i, j, x_span)] << " ";
         }
         file << std::endl;
     }

@@ -18,6 +18,7 @@ class Mesh {
   int get_from_index(int dim_) const;
   int get_to_index(int dim_) const;
   double get_dimension_delta(int dim_) const;
+  int get_internal_cells(int dim_) const; 
   int get_dimension_span(int dim_) const;
   void update_boundaries();
 
