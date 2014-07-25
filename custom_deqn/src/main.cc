@@ -7,6 +7,8 @@
 #include "config_file.h"
 #include "experiment.h"
 
+
+// TODO deprecated
 bool check_config_(const ConfigFile* config_) {
   bool valid = true;
   if (config_->get_or_default("debug", false)) {
@@ -33,7 +35,6 @@ bool check_config_(const ConfigFile* config_) {
     valid = false;
   }
 
-
   std::vector<double> min_coords =
     config_->get_or_default("min_coordinates", std::vector<double>());
   std::vector<double> max_coords =
@@ -48,12 +49,6 @@ bool check_config_(const ConfigFile* config_) {
                  "number of dimensions!" << std::endl;
     valid = false;
   }
-
-
-
-
-
-
 
 
   std::vector<double> regions = config_->get_or_default("subregions",
