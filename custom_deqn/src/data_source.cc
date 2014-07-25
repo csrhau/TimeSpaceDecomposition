@@ -32,7 +32,6 @@ void DataSource::populate(Mesh * const mesh_){
   // Zero initialize u1 - not strictly necessary
   std::fill(&u0[0], &u0[cell_count], 0);
   std::fill(&u1[0], &u1[cell_count], 0);
-  // TODO this code heavily depends on the 2d case
   int subregion_count = _subregions.size() / 4; // This should be mesh->mdims()
   std::vector<double>::const_iterator it = _subregions.begin();
   const std::vector<int>& padded_sizes = mesh_->get_padded_sizes();
@@ -41,11 +40,11 @@ void DataSource::populate(Mesh * const mesh_){
     double y_min = *it++;
     double x_max = *it++;
     double y_max = *it++;
-    for (int j = 0; j < padded_sizes[1]; ++j) { 
+    for (int j = 0; j < padded_sizes[1]; ++j) {
       const double y_disp = mesh_->displacement(1, j);
       for (int i = 0; i < padded_sizes[0]; ++i) {
         double x_disp = mesh_->displacement(0, i);
-        if (y_disp >= y_min && y_disp < y_max 
+        if (y_disp >= y_min && y_disp < y_max
          && x_disp >= x_min && x_disp < x_max) {
           u0[i + j * padded_sizes[0]] = 10;
         }

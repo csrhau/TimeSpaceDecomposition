@@ -6,7 +6,7 @@
 class ConfigFile;
 class Mesh;
 class DataSource {
- public: 
+ public:
   DataSource(const ConfigFile * const config_);
   ~DataSource();
   void populate(Mesh * const mesh_);
@@ -18,7 +18,7 @@ class DataSource {
   std::vector<int> _dim_cells;
   std::vector<double> _subregions;
 
-    
+
   int _nx;
   int _ny;
   void init();

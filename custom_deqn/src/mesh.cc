@@ -1,12 +1,11 @@
 #include "mesh.h"
-#include "config_file.h"
 
 #include <vector>
 #include <iostream>
 #include <algorithm>
 
-
-#define POLY2(i, j, ispan) ((i) + ((j)  * (ispan)))
+#include "config_file.h"
+#include "tools.h"
 
 Mesh::Mesh(const ConfigFile * const config_) : _config(config_) {
   _debug = config_->get_or_default("debug", false);
@@ -39,8 +38,7 @@ void Mesh::init() {
       offsets.push_back (offset);
     }
     _cell_offsets.push_back(offsets);
-  } 
-  // TODO do cell_offsets [0 = x, 1 = y and so on]
+  }
   // Calculate total memory requirements for each space
   std::vector<int>::const_iterator it = _padded_sizes.begin();
   std::vector<int>::const_iterator itEnd = _padded_sizes.end();
@@ -69,11 +67,11 @@ void Mesh::update_boundaries(){
 void Mesh::reflect_boundary(int boundary_) {
   // N.B. use u1 as we're in the current timestep
   double *u1 = get_u1();
-  int x_min = get_from_index(0);
-  int y_min = get_from_index(1);
-  int x_max = get_to_index(0);
-  int y_max = get_to_index(1);
-  int x_span = get_dimension_span(0);
+  int x_min = get_from_index(DIM_X);
+  int y_min = get_from_index(DIM_Y);
+  int x_max = get_to_index(DIM_X);
+  int y_max = get_to_index(DIM_Y);
+  int x_span = get_dimension_span(DIM_X);
   switch(boundary_) {
     case 0: { /* bottom */
       for (int i = x_min; i < x_max; ++i) {
@@ -86,7 +84,7 @@ void Mesh::reflect_boundary(int boundary_) {
       for (int j = y_min; j < y_max; ++j) {
         int left = POLY2(x_min - 1, j, x_span);
         int center = POLY2(x_min, j, x_span);
-        u1[left] = u1[center]; 
+        u1[left] = u1[center];
       }
     } break;
     case 2: { /* top */
@@ -106,8 +104,8 @@ void Mesh::reflect_boundary(int boundary_) {
     default: { // TODO throw exception.
       std::cerr << "Error in reflectBoundaries(): unknown boundary id ("
                 << boundary_ << ")" << std::endl;
-    } 
-  } 
+    }
+  }
 }
 
 int Mesh::n_dimensions() const {

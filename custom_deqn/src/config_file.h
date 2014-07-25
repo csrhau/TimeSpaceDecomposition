@@ -32,7 +32,7 @@ class ConfigFile {
     iss >> val;
     return val;
   }
- 
+
   // Vectors
   template <typename T>
   const std::vector<T> get_or_default(const std::string& name,

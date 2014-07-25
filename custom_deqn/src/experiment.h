@@ -15,7 +15,7 @@ class Experiment {
  private:
   const ConfigFile * const  _config;
   int _step;
-  Calculation *_calculation; // todo const ptrs
+  Calculation *_calculation;
   Mesh *_mesh;
   bool _debug;
   int _visualization_rate;
@@ -24,6 +24,6 @@ class Experiment {
   double _del_t;
   std::string _name;
 
-}; 
+};
 
 #endif

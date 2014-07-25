@@ -34,7 +34,7 @@ ConfigFile::ConfigFile(std::string& filename_) : _filename(filename_) {
     }
     // RTRIM
     pos = value.find_last_not_of(' ');
-    if (pos != std::string::npos) { 
+    if (pos != std::string::npos) {
       value.erase(pos + 1);
       pos = value.find_first_not_of(' ');
       if (pos != std::string::npos) {
@@ -42,7 +42,7 @@ ConfigFile::ConfigFile(std::string& filename_) : _filename(filename_) {
       }
     } else {
       value.erase(value.begin(), value.end());
-    }  
+    }
     if (value.empty()) {
      std::cerr << "Invalid configuration in " << _filename << ", Key "
                << key << " was specified without a value!" << std::endl;
@@ -70,7 +70,7 @@ void ConfigFile::print_config() const {
 
 const std::string& ConfigFile::get_filename() const {
   return _filename;
-} 
+}
 
 // getter template function defined in header file.
 // template <typename T>

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.11.12)  21 JUL 2014 14:41
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.11.12)  23 JUL 2014 15:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -205,12 +205,27 @@ File: graphics/2d_von_neumann_stencil.pdf Graphic file (type pdf)
 
 <use graphics/2d_von_neumann_stencil.pdf>
 Package pdftex.def Info: graphics/2d_von_neumann_stencil.pdf used on input line
- 25.
+ 20.
 (pdftex.def)             Requested size: 180.67499pt x 181.78188pt.
+
+<graphics/2d2x2comms.pdf, id=2, 429.605pt x 420.57124pt>
+File: graphics/2d2x2comms.pdf Graphic file (type pdf)
+
+<use graphics/2d2x2comms.pdf>
+Package pdftex.def Info: graphics/2d2x2comms.pdf used on input line 29.
+(pdftex.def)             Requested size: 180.67499pt x 176.87616pt.
+
+<graphics/1d3x1comms.pdf, id=3, 495.8525pt x 190.7125pt>
+File: graphics/1d3x1comms.pdf Graphic file (type pdf)
+
+<use graphics/1d3x1comms.pdf>
+Package pdftex.def Info: graphics/1d3x1comms.pdf used on input line 40.
+(pdftex.def)             Requested size: 180.67499pt x 69.48871pt.
  [1{/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 
- <./graphics/2d_von_neumann_stencil.pdf>]
+ <./graphics/2d_von_neumann_stencil.pdf> <./graphics/2d2x2comms.pdf> <./graphic
+s/1d3x1comms.pdf>]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -222,23 +237,23 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[2] (./proposal.aux) ) 
+[2
+
+] (./proposal.aux) ) 
 Here is how much of TeX's memory you used:
- 2170 strings out of 493315
- 35231 string characters out of 6137903
- 98553 words of memory out of 5000000
- 5629 multiletter control sequences out of 15000+600000
- 31871 words of font info for 61 fonts, out of 8000000 for 9000
+ 2180 strings out of 493315
+ 35488 string characters out of 6137903
+ 96579 words of memory out of 5000000
+ 5639 multiletter control sequences out of 15000+600000
+ 29668 words of font info for 59 fonts, out of 8000000 for 9000
  958 hyphenation exceptions out of 8191
- 37i,8n,23p,843b,238s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/base/
-8r.enc}</usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></u
-sr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/
-texlive/2013/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on proposal.pdf (2 pages, 38477 bytes).
+ 37i,8n,23p,682b,238s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/base/8r
+.enc}</usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
+Output written on proposal.pdf (2 pages, 35859 bytes).
 PDF statistics:
- 33 PDF objects out of 1000 (max. 8388607)
- 23 compressed objects within 1 object stream
+ 44 PDF objects out of 1000 (max. 8388607)
+ 32 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

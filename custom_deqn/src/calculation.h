@@ -4,7 +4,7 @@
 class ConfigFile;
 class Mesh;
 class Calculation {
- public: 
+ public:
   Calculation(const ConfigFile * const config_,
               Mesh * const mesh_);
   ~Calculation();

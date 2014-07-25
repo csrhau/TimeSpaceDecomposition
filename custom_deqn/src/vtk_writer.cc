@@ -5,8 +5,8 @@
 #include <fstream>
 
 #include "mesh.h"
+#include "tools.h"
 
-#define POLY2(i, j, ispan) ((i) + ((j)  * (ispan)))
 VtkWriter::VtkWriter(std::string basename, Mesh* mesh) :
     dump_basename(basename),
     vtk_header("# vtk DataFile Version 3.0\nvtk output\nASCII\n"),
@@ -33,18 +33,16 @@ void VtkWriter::write(int step, double time)
 
     fname << dump_basename << ".visit";
 
-    std::cout << "GREPTARGET writing to " << std::endl;
-
     std::string file_name = fname.str();
 
     // Open file in append mode
     file.open(file_name.c_str(), std::ofstream::out | std::ofstream::in | std::ofstream::app);
 
     file << dump_basename
-        << "." 
-        << step 
-        << "." 
-        << 1 
+        << "."
+        << step
+        << "."
+        << 1
         << ".vtk" << std::endl;
 
     writeVtk(step, time);
@@ -55,9 +53,9 @@ void VtkWriter::writeVtk(int step, double time)
     std::ofstream file;
     std::stringstream fname;
 
-    fname << dump_basename 
-        << "." 
-        << step 
+    fname << dump_basename
+        << "."
+        << step
         << "."
         << 1
         << ".vtk";
@@ -78,18 +76,18 @@ void VtkWriter::writeVtk(int step, double time)
     file << "CYCLE 1 1 int" << std::endl;
     file << step << std::endl;
     if (mesh->n_dimensions() == 2) {
-        file << "DIMENSIONS " << mesh->get_internal_cells(0)+1
+        file << "DIMENSIONS " << mesh->get_internal_cells(DIM_X)+1
             << " " << mesh->get_internal_cells(1)+1
             << " 1" << std::endl;
     } else if (mesh->n_dimensions() == 3) {
-        file << "DIMENSIONS " << mesh->get_internal_cells(0)+1
+        file << "DIMENSIONS " << mesh->get_internal_cells(DIM_X)+1
             << " " << mesh->get_internal_cells(1)+1
             << " " << mesh->get_internal_cells(2)+1 << std::endl;
     }
 
-    file << "X_COORDINATES " << mesh->get_internal_cells(0)+1 << " float" << std::endl;
-    for(int i = 0; i < mesh->get_internal_cells(0)+1; ++i) {
-        file << i * mesh->get_dimension_delta(0) << " ";
+    file << "X_COORDINATES " << mesh->get_internal_cells(DIM_X)+1 << " float" << std::endl;
+    for(int i = 0; i < mesh->get_internal_cells(DIM_X)+1; ++i) {
+        file << i * mesh->get_dimension_delta(DIM_X) << " ";
     }
 
     file << std::endl;
@@ -104,16 +102,15 @@ void VtkWriter::writeVtk(int step, double time)
     file << "Z_COORDINATES 1 float" << std::endl;
     file << "0.0000" << std::endl;
 
-    file << "CELL_DATA " << ((mesh->get_to_index(0) - mesh->get_from_index(0)) * (mesh->get_to_index(1) - mesh->get_from_index(1))) << std::endl;
+    file << "CELL_DATA " << ((mesh->get_to_index(DIM_X) - mesh->get_from_index(DIM_X)) * (mesh->get_to_index(DIM_Y) - mesh->get_from_index(DIM_Y))) << std::endl;
 
     file << "FIELD FieldData 1" << std::endl;
 
-    file << "u 1 " << ((mesh->get_to_index(0) - mesh->get_from_index(0)) * (mesh->get_to_index(1) - mesh->get_from_index(1))) << " double" <<  std::endl;
+    file << "u 1 " << ((mesh->get_to_index(DIM_X) - mesh->get_from_index(DIM_X)) * (mesh->get_to_index(DIM_Y) - mesh->get_from_index(DIM_Y))) << " double" <<  std::endl;
 
-    int x_span = mesh->get_dimension_span(0);
-    for(int j=mesh->get_from_index(1); j < mesh->get_to_index(1); ++j) {
-        for (int i = mesh->get_from_index(0); i < mesh->get_to_index(0); ++i) {
-            std::cout << "Writing out (" << i << "," << j << ") " << std::endl;
+    int x_span = mesh->get_dimension_span(DIM_X);
+    for(int j=mesh->get_from_index(DIM_Y); j < mesh->get_to_index(DIM_Y); ++j) {
+        for (int i = mesh->get_from_index(DIM_X); i < mesh->get_to_index(DIM_X); ++i) {
             file << mesh->get_u0()[POLY2(i, j, x_span)] << " ";
         }
         file << std::endl;

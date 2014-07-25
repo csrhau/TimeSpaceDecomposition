@@ -5,7 +5,7 @@
 
 class ConfigFile;
 class Mesh {
- public: 
+ public:
   Mesh(const ConfigFile * const config_);
   ~Mesh();
   void step();
@@ -18,7 +18,7 @@ class Mesh {
   int get_from_index(int dim_) const;
   int get_to_index(int dim_) const;
   double get_dimension_delta(int dim_) const;
-  int get_internal_cells(int dim_) const; 
+  int get_internal_cells(int dim_) const;
   int get_dimension_span(int dim_) const;
   void update_boundaries();
 
@@ -29,8 +29,8 @@ class Mesh {
   std::vector<double> _min_coords;
   std::vector<double> _max_coords;
   std::vector<double> _dimension_deltas;
-  std::vector<int> _from_indexes; 
-  std::vector<int> _to_indexes; 
+  std::vector<int> _from_indexes;
+  std::vector<int> _to_indexes;
   std::vector<int> _dim_cells; // Logical size of dimensions in cells
   std::vector<int> _padded_sizes; // _dim_cells + mesh padding
   std::vector<std::vector<double> > _cell_offsets;

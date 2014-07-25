@@ -21,7 +21,7 @@ bool check_config_(const ConfigFile* config_) {
   }
 
 
-  std::vector<int> dim_cells = config_->get_or_default("dimension_cells", 
+  std::vector<int> dim_cells = config_->get_or_default("dimension_cells",
                                                       std::vector<int>());
   if (dim_cells.size() == 0) {
     std::cerr << "Error! Config is missing dimension_cells key:\n"
@@ -34,9 +34,9 @@ bool check_config_(const ConfigFile* config_) {
   }
 
 
-  std::vector<double> min_coords = 
+  std::vector<double> min_coords =
     config_->get_or_default("min_coordinates", std::vector<double>());
-  std::vector<double> max_coords =  
+  std::vector<double> max_coords =
     config_->get_or_default("max_coordinates", std::vector<double>());
 
   if (min_coords.size() == 0 || max_coords.size() == 0) {
@@ -51,7 +51,7 @@ bool check_config_(const ConfigFile* config_) {
 
 
 
-  
+
 
 
 
