@@ -8,7 +8,7 @@
 #include "config_file.h"
 #include "tools.h"
 
-Mesh::Mesh(const ConfigFile * const config_) : _config(config_) {
+Mesh::Mesh(const ConfigFile& config_) : _config(config_) {
   parse_config();
   _padded_sizes = std::vector<int>();
   std::vector<int>::const_iterator it = _dim_cells.begin();
@@ -27,11 +27,11 @@ Mesh::~Mesh() {
 }
 
 void Mesh::parse_config() {
-  _debug = _config->get_or_default("debug", false);
-  _n_dimensions = _config->get_or_default("n_dimensions", 0);
-  _min_coords = _config->get_or_default("min_coordinates", std::vector<double>());
-  _max_coords = _config->get_or_default("max_coordinates", std::vector<double>());
-  _dim_cells = _config->get_or_default("dimension_cells",
+  _debug = _config.get_or_default("debug", false);
+  _n_dimensions = _config.get_or_default("n_dimensions", 0);
+  _min_coords = _config.get_or_default("min_coordinates", std::vector<double>());
+  _max_coords = _config.get_or_default("max_coordinates", std::vector<double>());
+  _dim_cells = _config.get_or_default("dimension_cells",
                                      std::vector<int>()); // Default will cause crash. Should be validated in main
 }
 

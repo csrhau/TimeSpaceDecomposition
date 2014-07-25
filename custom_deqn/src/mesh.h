@@ -6,7 +6,7 @@
 class ConfigFile;
 class Mesh {
  public:
-  Mesh(const ConfigFile * const config_);
+  Mesh(const ConfigFile& config_);
   ~Mesh();
   void step();
   int n_dimensions() const;
@@ -23,7 +23,7 @@ class Mesh {
   void update_boundaries();
 
  private:
-  const ConfigFile * const  _config;
+  const ConfigFile& _config;
   bool _debug;
   int _n_dimensions;
   std::vector<double> _min_coords;

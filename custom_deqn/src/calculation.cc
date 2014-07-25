@@ -6,10 +6,10 @@
 #include "mesh.h"
 #include "tools.h"
 
-Calculation::Calculation(const ConfigFile * const config_,
+Calculation::Calculation(const ConfigFile& config_,
                          Mesh * const mesh_) : _config(config_),
                                                _mesh(mesh_) {
-  _n_dimensions = _config->get_or_default("n_dimensions", 2);
+  _n_dimensions = _config.get_or_default("n_dimensions", 2);
 }
 
 Calculation::~Calculation() {}

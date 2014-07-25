@@ -17,8 +17,6 @@ class ConfigFile {
    void print_config() const;
    const std::string& get_filename() const;
 
-
-
    // Config getters
    // General Case
    template <typename T>

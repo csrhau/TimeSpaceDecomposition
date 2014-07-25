@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #include "config_file.h"
-#include "experiment.h"
+#include "driver.h"
 
 namespace {
 bool check_config(const ConfigFile* config_) {
@@ -79,11 +79,11 @@ int main(int argc, char *argv[]) {
 
 
   try {
-    std::cout << "Construction of experiment" << std::endl;
-    Experiment experiment(&config_);
-    std::cout << "Construction of experiment done " << std::endl;
-    experiment.run();
-    std::cout << "Experiment complete!" << std::endl;
+    std::cout << "Construction of driver" << std::endl;
+    Driver driver(config_);
+    std::cout << "Construction of driver done " << std::endl;
+    driver.run();
+    std::cout << "Driver complete!" << std::endl;
   } catch (std::logic_error& ex) {
     std::cerr << "Exception thrown!! " << ex.what();
     return 1;

@@ -1,19 +1,19 @@
-#ifndef EXPERIMENT_H
-#define EXPERIMENT_H
+#ifndef DRIVER_H
+#define DRIVER_H
 
 #include "calculation.h"
 #include <string>
 
 class ConfigFile;
 class Mesh;
-class Experiment {
+class Driver {
  public:
-  Experiment(const ConfigFile * const config_);
-  ~Experiment();
+  Driver(const ConfigFile& config_);
+  ~Driver();
   void run();
 
  private:
-  const ConfigFile * const  _config;
+  const ConfigFile& _config;
   int _step;
   Calculation *_calculation;
   Mesh *_mesh;

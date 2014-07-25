@@ -8,19 +8,14 @@
 #include <algorithm>
 #include <stdexcept>
 
-DataSource::DataSource(const ConfigFile * const config_) : _config(config_) {
-  _debug = config_->get_or_default("debug", false);
-  _n_dimensions = config_->get_or_default("n_dimensions", 2);
-  _dim_cells = config_->get_or_default("dimension_cells", std::vector<int>());
-  _subregions = config_->get_or_default("subregions", std::vector<double>());
-  init();
+DataSource::DataSource(const ConfigFile& config_) : _config(config_) {
+  _debug = config_.get_or_default("debug", false);
+  _n_dimensions = config_.get_or_default("n_dimensions", 2);
+  _dim_cells = config_.get_or_default("dimension_cells", std::vector<int>());
+  _subregions = config_.get_or_default("subregions", std::vector<double>());
 }
 DataSource::~DataSource() {}
 
-void DataSource::init() {
-  std::cout << "DataSource initializing" << std::endl;
-  // Not really sure what to do here...
-}
 
 void DataSource::populate(Mesh * const mesh_){
   if (mesh_->n_dimensions() != 2) {
