@@ -30,3 +30,8 @@ custom_deqn/build/
 # Visualisation stuff
 *.vtk
 *.visit
+
+#Latex cruft
+*.aux
+*.log
+*.synctex.gz
