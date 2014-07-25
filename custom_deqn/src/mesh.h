@@ -37,6 +37,7 @@ class Mesh {
   double *_u0;
   double *_u1;
   int _cell_count;
+  void parse_config();
   void init();
   void reflect_boundary(int boundary_);
 };

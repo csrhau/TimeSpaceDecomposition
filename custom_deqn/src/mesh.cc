@@ -3,17 +3,13 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <stdexcept>
 
 #include "config_file.h"
 #include "tools.h"
 
 Mesh::Mesh(const ConfigFile * const config_) : _config(config_) {
-  _debug = config_->get_or_default("debug", false);
-  _n_dimensions = config_->get_or_default("n_dimensions", 0);
-  _min_coords = config_->get_or_default("min_coordinates", std::vector<double>());
-  _max_coords = config_->get_or_default("max_coordinates", std::vector<double>());
-  _dim_cells = config_->get_or_default("dimension_cells",
-                                     std::vector<int>()); // Default will cause crash. Should be validated in main
+  parse_config();
   _padded_sizes = std::vector<int>();
   std::vector<int>::const_iterator it = _dim_cells.begin();
   std::vector<int>::const_iterator itEnd = _dim_cells.end();
@@ -24,7 +20,20 @@ Mesh::Mesh(const ConfigFile * const config_) : _config(config_) {
   }
   init();
 }
-Mesh::~Mesh() {}
+
+Mesh::~Mesh() {
+  delete[]  _u0;
+  delete[] _u1;
+}
+
+void Mesh::parse_config() {
+  _debug = _config->get_or_default("debug", false);
+  _n_dimensions = _config->get_or_default("n_dimensions", 0);
+  _min_coords = _config->get_or_default("min_coordinates", std::vector<double>());
+  _max_coords = _config->get_or_default("max_coordinates", std::vector<double>());
+  _dim_cells = _config->get_or_default("dimension_cells",
+                                     std::vector<int>()); // Default will cause crash. Should be validated in main
+}
 
 void Mesh::init() {
   for (int dim = 0; dim < _n_dimensions; ++dim) {
@@ -56,7 +65,6 @@ void Mesh::init() {
 void Mesh::step() {
   std::swap(_u0, _u1);
 } // Should be virtual
-
 
 void Mesh::update_boundaries(){
   for (int boundary = 0; boundary < 4; ++boundary) {
@@ -101,9 +109,9 @@ void Mesh::reflect_boundary(int boundary_) {
         u1[right] = u1[center];
       }
     } break;
-    default: { // TODO throw exception.
-      std::cerr << "Error in reflectBoundaries(): unknown boundary id ("
-                << boundary_ << ")" << std::endl;
+    default: {
+      throw std::domain_error("Error in reflectBoundaries(): unknown boundary "
+                              + boundary_);
     }
   }
 }
