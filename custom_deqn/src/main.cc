@@ -59,10 +59,7 @@ bool check_config(const ConfigFile* config_) {
   }
   return valid;
 }
-} 
-
-
-// File scoped namespace
+} // File scoped namespace
 int main(int argc, char *argv[]) {
   if (argc != 2) {
     std::cerr << "Usage: deqn <filename>" << std::endl;
@@ -76,7 +73,6 @@ int main(int argc, char *argv[]) {
     std::cout << "Bad config! exiting" << std::endl;
     return 1;
   }
-
 
   try {
     std::cout << "Construction of driver" << std::endl;
