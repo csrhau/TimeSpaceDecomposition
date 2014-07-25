@@ -11,7 +11,7 @@
 #include "tools.h"
 
 Driver::Driver(const ConfigFile& config_) : _config(config_),
-                                                           _step(0) {
+                                            _step(0) {
   _debug = _config.get_or_default("debug", false);
   _name = _config.get_or_default("name", _config.get_filename());
   std::cout << "Using " << _name << " as experiment name" << std::endl;
