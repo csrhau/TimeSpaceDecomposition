@@ -7,9 +7,8 @@
 #include "config_file.h"
 #include "experiment.h"
 
-
-// TODO deprecated
-bool check_config_(const ConfigFile* config_) {
+namespace {
+bool check_config(const ConfigFile* config_) {
   bool valid = true;
   if (config_->get_or_default("debug", false)) {
     config_->print_config();
@@ -60,7 +59,10 @@ bool check_config_(const ConfigFile* config_) {
   }
   return valid;
 }
+} 
 
+
+// File scoped namespace
 int main(int argc, char *argv[]) {
   if (argc != 2) {
     std::cerr << "Usage: deqn <filename>" << std::endl;
@@ -70,7 +72,7 @@ int main(int argc, char *argv[]) {
   const ConfigFile config_(filename);
 
 
-  if (!check_config_(&config_)) {
+  if (!check_config(&config_)) {
     std::cout << "Bad config! exiting" << std::endl;
     return 1;
   }
