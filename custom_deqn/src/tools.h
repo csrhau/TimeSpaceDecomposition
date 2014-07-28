@@ -8,6 +8,7 @@
 #define DIM_Z 2
 
 namespace Tools {
+
 static inline double mesh_sum_2d(Mesh* mesh_) {
   double *u0 = mesh_->get_u0();
   int x_min = mesh_->get_from_index(DIM_X);

@@ -27,7 +27,7 @@ void DataSource::populate(Mesh * const mesh_){
   // Zero initialize u1 - not strictly necessary
   std::fill(&u0[0], &u0[cell_count], 0);
   std::fill(&u1[0], &u1[cell_count], 0);
-  int subregion_count = _subregions.size() / 4; // This should be mesh->mdims()
+  int subregion_count = _subregions.size() / 4; // TODO This should be mesh->mdims()
   std::vector<double>::const_iterator it = _subregions.begin();
   const std::vector<int>& padded_sizes = mesh_->get_padded_sizes();
   for (int s = 0; s < subregion_count; ++s) {
@@ -35,6 +35,7 @@ void DataSource::populate(Mesh * const mesh_){
     double y_min = *it++;
     double x_max = *it++;
     double y_max = *it++;
+    // TODO could be made faster by starting at our box.
     for (int j = 0; j < padded_sizes[1]; ++j) {
       const double y_disp = mesh_->displacement(1, j);
       for (int i = 0; i < padded_sizes[0]; ++i) {

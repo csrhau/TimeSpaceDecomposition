@@ -2,11 +2,14 @@
 #define MESH_H
 
 #include <vector>
+#include <mpi.h>
 
 class ConfigFile;
 class Mesh {
  public:
-  Mesh(const ConfigFile& config_);
+  Mesh(const ConfigFile& config_,
+       MPI_Comm cart_comm_, 
+       const std::vector<int>& dim_nodes_);
   ~Mesh();
   void step();
   int n_dimensions() const;
@@ -21,6 +24,8 @@ class Mesh {
   int get_internal_cells(int dim_) const;
   int get_dimension_span(int dim_) const;
   void update_boundaries();
+  bool has_prev_node(int dim_) const;
+  bool has_next_node(int dim_) const;
 
  private:
   const ConfigFile& _config;
@@ -39,7 +44,13 @@ class Mesh {
   int _cell_count;
   void parse_config();
   void init();
-  void reflect_boundary(int boundary_);
+  void reflect_boundary_impl(int boundary_);
+  void reflect_boundary(int dim_, bool lower_boundary_);
+  // MPI stuff
+  MPI_Comm _cart_comm;
+  const std::vector<int>& _dim_nodes;
+  int _cart_rank;
+  std::vector<int> _cart_coords;
 };
 
 #endif

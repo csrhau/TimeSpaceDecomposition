@@ -2,7 +2,11 @@
 #define DRIVER_H
 
 #include "calculation.h"
+
+#include <vector>
 #include <string>
+#include <mpi.h>
+
 
 class ConfigFile;
 class Mesh;
@@ -22,7 +26,17 @@ class Driver {
   double _t_start;
   double _t_end;
   double _del_t;
+  size_t _n_dimensions;
   std::string _name;
+  // MPI Things
+  bool _mpi_reorder;
+  int _world_rank;
+  int _world_size;
+  std::vector<int> _dim_nodes;
+  std::vector<int> _dim_periods;
+  MPI_Comm _cart_comm;
+  void parse_config();
+  void init();
 
 };
 

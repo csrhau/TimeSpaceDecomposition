@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include <cassert>
 #include <iostream>
 #include <string>
@@ -60,29 +61,28 @@ bool check_config(const ConfigFile* config_) {
   return valid;
 }
 } // File scoped namespace
+
 int main(int argc, char *argv[]) {
+  MPI_Init(&argc, &argv);
+  // Validate input 
   if (argc != 2) {
     std::cerr << "Usage: deqn <filename>" << std::endl;
-    return 1;
+    MPI_Abort(MPI_COMM_WORLD, 1);
   }
   std::string filename = std::string(argv[1]);
   const ConfigFile config_(filename);
-
-
   if (!check_config(&config_)) {
     std::cout << "Bad config! exiting" << std::endl;
-    return 1;
+    MPI_Abort(MPI_COMM_WORLD, 1);
   }
-
   try {
-    std::cout << "Construction of driver" << std::endl;
+    // Run Simulation
     Driver driver(config_);
-    std::cout << "Construction of driver done " << std::endl;
     driver.run();
-    std::cout << "Driver complete!" << std::endl;
   } catch (std::logic_error& ex) {
     std::cerr << "Exception thrown!! " << ex.what();
-    return 1;
+    MPI_Abort(MPI_COMM_WORLD, 1);
   }
+  MPI_Finalize();
   return 0;
 }
