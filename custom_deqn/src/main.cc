@@ -15,9 +15,9 @@ bool check_config(const ConfigFile* config_) {
     config_->print_config();
   }
 
-  std::size_t n_dims = config_->get_or_default("n_dimensions", 0);
-  if (n_dims <= 0) {
-    std::cerr << "Error! n_dimensions has to be greater than zero, currently:"
+  std::size_t n_dims = config_->get_or_default("n_dimensions", 2);
+  if (n_dims != 2) {
+    std::cerr << "Error! n_dimensions has to be 2, currently:"
               << n_dims << std::endl;
     valid = false;
   }
@@ -50,10 +50,9 @@ bool check_config(const ConfigFile* config_) {
     valid = false;
   }
 
-
   std::vector<double> regions = config_->get_or_default("subregions",
                                                     std::vector<double>());
-  if (regions.size() % 4 != 0) {
+  if (regions.size() % (n_dims * 2) != 0) {
     std::cerr << "Error! Subregions have to be square!\n"
                  "\t e.g. subregions  10 10 30 30" << std::endl;
     valid = false;
