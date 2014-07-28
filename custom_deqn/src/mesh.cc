@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
-
+#include <sstream>
 #include "config_file.h"
 #include "tools.h"
 
@@ -46,11 +46,13 @@ void Mesh::init() {
   MPI_Cart_coords(_cart_comm, _cart_rank, _n_dimensions ,&_cart_coords[0]);
 
   // This is broken. XXX remember to sort the DIM_X stuff - DIM_X should be the MOST valued thing
-  std::cout << "cart proc " << _cart_rank << " has position " << _cart_coords[0] << ", "
+  std::stringstream ss;
+  ss << "cart proc " << _cart_rank << " has position " << _cart_coords[0] << ", "
             << _cart_coords[1] << "and neighbours: \n"
             << "\t" << has_prev_node(0) << "\n"
             << has_prev_node(1) << "\tX\t" << has_next_node(1) << "\n"
             << "\t" << has_next_node(0) << std::endl;
+
   //       step 2: Work out which dimensions we have neighbours in 
   //            2b: and by extension, which dimensions we need to reflect in
  
