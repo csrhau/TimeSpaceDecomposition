@@ -44,7 +44,7 @@ void Driver::parse_config() {
   _debug = _config.get_or_default("debug", false);
   _name = _config.get_or_default("name", std::string("deqn_experiment"));
   std::cout << "NAME IS: " << _name << std::endl;
-  _visualisation_rate = _config.get_or_default("visualisation_rate", 10);
+  _visualization_rate = _config.get_or_default("visualization_rate", 10);
   _t_start = _config.get_or_default("start_time", 0.0);                         
   _t_end = _config.get_or_default("end_time", 2.0);                             
   _del_t = _config.get_or_default("timestep", 0.02);
@@ -57,13 +57,17 @@ void Driver::parse_config() {
   if (_n_dimensions != 2) {
     throw std::logic_error("Code can only handle 2D simulations at present");
   }
-  _dim_nodes= _config.get_or_default("dimension_nodes", std::vector<int>());       
-  _dim_periods= _config.get_or_default("dimension_periods", std::vector<int>());
+  _dim_nodes = _config.get_or_default("dimension_nodes", std::vector<int>());       
+  _dim_periods = _config.get_or_default("dimension_periods", std::vector<int>());
   if (_dim_nodes.size() == 0) {
     _dim_nodes.resize(_n_dimensions, 0);
+  } else if (_dim_nodes.size() != _n_dimensions) {
+    throw std::logic_error("Dimension nodes vector is incorrectly sized");
   }
   if (_dim_periods.size() == 0) {
     _dim_periods.resize(_n_dimensions, 0);
+  } else if (_dim_periods.size() != _n_dimensions) {
+    throw std::logic_error("Dimension periods vector is incorrectly sized");
   }
 }
 
@@ -81,10 +85,14 @@ void Driver::run() {
     _mesh->step();
     ++_step;
     if (_debug) {
-      std::cout << "Step " << _step << " complete. Total temp: " 
-                << Tools::mesh_sum_2d(_mesh) << "\n";
+      std::cout << "Step " << _step << " complete. Simulation time now " 
+                << t_now << "\nTotal temp: " << Tools::mesh_sum_2d(_mesh) 
+                << std::endl;
     }
-    if (_step % _visualisation_rate == 0 && t_now < _t_end) {
+    if (_step % _visualization_rate == 0 && t_now < _t_end) {
+      if (_debug) { 
+        std::cout << "Writing VTK file" << std::endl;
+      }
       _writer->write(_step, t_now);
     }
   }

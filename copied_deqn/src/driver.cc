@@ -103,8 +103,9 @@ void Driver::run() {
       writer.write(_step, t_now);
     }
     if (_debug) {
-      std::cout << "Step " << _step << " complete. Total temp: " 
-                << Tools::mesh_sum_2d(_mesh) << "\n";
+      std::cout << "Step " << _step << " complete. Simulation time now" 
+                << t_now << "\nTotal temp: " << Tools::mesh_sum_2d(_mesh) 
+                << std::endl;
     }
   }
   // Final dump

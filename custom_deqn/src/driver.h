@@ -21,7 +21,7 @@ class Driver {
   void parse_config();
   bool _debug;
   int _step;
-  int _visualisation_rate;
+  int _visualization_rate;
   double _t_start;
   double _t_end;
   double _del_t;

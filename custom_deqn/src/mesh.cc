@@ -98,13 +98,8 @@ void Mesh::step() {
 } // Should be virtual
 
 void Mesh::update_boundaries(){
-  for (int dim = 0; dim < _n_dimensions; ++dim) {
-    if (!has_prev_node(dim)) { 
-      reflect_boundary(dim, false); // Lower
-    } 
-    if (!has_next_node(dim)) {
-      reflect_boundary(dim, true);  // Upper
-    }
+  for (int boundary = 0; boundary < 4; ++boundary) {
+    reflect_boundary_impl(boundary);
   }
 } // Should be virtual
 
