@@ -1,0 +1,9 @@
+debug true
+logical_dimensions 8 8
+physical_dimensions 100.0 100.0
+start_time 0.0
+end_time 10.02
+timestep 0.01
+subregions 20.1 20.1 80.1 80.1
+visualization_rate 7
+dim_nodes 2 2
