@@ -23,9 +23,10 @@
 #vim cruft
 *.swp
 
-#build directory
+#build directories
 reference_deqn/build/
 custom_deqn/build/
+prototype/build/
 
 # Visualisation stuff
 *.vtk
