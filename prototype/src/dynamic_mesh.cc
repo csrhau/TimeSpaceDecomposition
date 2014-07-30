@@ -185,7 +185,7 @@ void DynamicMesh::exchange_boundaries() {
   }
   if (has_right_neighbour()) {
     const int i = 1; 
-    const int j = get_node_inner_rows();
+    const int j = get_node_inner_cols();
     // irecv to i, j+1; isend from i, j
     MPI_Isend(&_u1[i * x_span + j], 1, _col_type, _right_rank_or_neg, RIGHT, _cart_comm, &send_request[paircount]);
     MPI_Irecv(&_u1[i * x_span + (j + 1)], 1, _col_type, _right_rank_or_neg, LEFT, _cart_comm, &recv_request[paircount]);

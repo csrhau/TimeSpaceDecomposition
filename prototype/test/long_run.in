@@ -1,4 +1,5 @@
 debug true
+mesh_type static
 logical_dimensions 200 200
 physical_dimensions 100.0 100.0
 start_time 0.0

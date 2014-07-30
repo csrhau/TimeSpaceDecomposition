@@ -1,4 +1,4 @@
-#include "static_mesh.h"
+#include "static_blocking_mesh.h"
 
 #include <mpi.h>
 #include <iostream>
@@ -18,7 +18,7 @@ namespace {
   };
 }
 
-StaticMesh::StaticMesh(const ConfigFile& config_, 
+StaticBlockingMesh::StaticBlockingMesh(const ConfigFile& config_, 
            MPI_Comm cart_comm_,
            const std::vector<int>& dim_nodes_) : _config(config_), 
                                                  _cart_comm(cart_comm_),
@@ -66,7 +66,7 @@ StaticMesh::StaticMesh(const ConfigFile& config_,
                   &_col_type);
   MPI_Type_commit(&_col_type);
 
-  // Compute ranks of neighbours
+  // Compute ranks of neighbours -- TODO don't use 'top/bottom, use upper, lower'
   int coords[2];
   if (has_top_neighbour()) {
     coords[0] = _cart_coords[0] - 1;
@@ -90,12 +90,12 @@ StaticMesh::StaticMesh(const ConfigFile& config_,
   }
 }
 
-StaticMesh::~StaticMesh() {
+StaticBlockingMesh::~StaticBlockingMesh() {
   delete[] _u0;
   delete[] _u1;
 }
 
-void StaticMesh::reflect_boundary(int boundary_) {
+void StaticBlockingMesh::reflect_boundary(int boundary_) {
   // n.b. use u1 as we're in the current timestep
   int x_span = get_node_outer_cols();
   switch (boundary_) {
@@ -134,7 +134,7 @@ void StaticMesh::reflect_boundary(int boundary_) {
   }
 }
 
-void StaticMesh::advance() {
+void StaticBlockingMesh::advance() {
   if (!has_top_neighbour()) {
     reflect_boundary(TOP);
   }
@@ -152,101 +152,139 @@ void StaticMesh::advance() {
   std::swap(_u0, _u1);
 }
 
-void StaticMesh::exchange_boundaries() {
-  // Use a very simple | 0 | 1 | 0 | 1 | scheme
-  // 0 sends right, 1 sends left, then flip
+void StaticBlockingMesh::exchange_boundaries() {
+  // Plan: Use sendrecv as follows:
+  // Colwise, odd up, even down          - TAGGED TOP
+  // Colwise, odd down, even up          - TAGGED BOTTOM
+  // Rowwise, odd left, even right       - TAGGED LEFT
+  // Rowwise, odd right, even left       - TAGGED RIGHT
+  MPI_Status status;
   const int x_span = get_node_outer_cols();
   const int horizontal_cells = get_node_inner_cols();
-  int paircount = 0;
-  MPI_Request send_request[4]; // Has to be present but are not consulted
-  MPI_Request recv_request[4];
-  MPI_Status  recv_status[4];
-  if (has_top_neighbour()){
-    const int i = 0;
-    const int j = 1;
-    MPI_Isend(&_u1[(i + 1) * x_span + j], horizontal_cells, MPI_DOUBLE, _top_rank_or_neg, TOP, _cart_comm, &send_request[paircount]);
-    MPI_Irecv(&_u1[i * x_span + j], horizontal_cells, MPI_DOUBLE, _top_rank_or_neg, BOTTOM, _cart_comm, &recv_request[paircount]);
-    ++paircount;
-  }
-  if (has_left_neighbour()) {
-    const int i = 1;
-    const int j = 0;
-    // irecv to i, j; isend from i, j+1
-    MPI_Isend(&_u1[i * x_span + (j + 1)], 1, _col_type, _left_rank_or_neg, LEFT, _cart_comm, &send_request[paircount]);
-    MPI_Irecv(&_u1[i * x_span + j], 1, _col_type, _left_rank_or_neg, RIGHT, _cart_comm, &recv_request[paircount]);
-    ++paircount;
-  }
-  if (has_bottom_neighbour()){
-    const int i = get_node_inner_rows();
-    const int j = 1;
-    MPI_Isend(&_u1[i * x_span + j], horizontal_cells, MPI_DOUBLE, _bottom_rank_or_neg, BOTTOM, _cart_comm, &send_request[paircount]);
-    MPI_Irecv(&_u1[(i + 1) * x_span + j], horizontal_cells, MPI_DOUBLE, _bottom_rank_or_neg, TOP, _cart_comm, &recv_request[paircount]);
-    ++paircount;
-  }
-  if (has_right_neighbour()) {
-    const int i = 1; 
-    const int j = get_node_inner_cols();
-    // irecv to i, j+1; isend from i, j
-    MPI_Isend(&_u1[i * x_span + j], 1, _col_type, _right_rank_or_neg, RIGHT, _cart_comm, &send_request[paircount]);
-    MPI_Irecv(&_u1[i * x_span + (j + 1)], 1, _col_type, _right_rank_or_neg, LEFT, _cart_comm, &recv_request[paircount]);
-    ++paircount;
-  }
+  const int vertical_cells = get_node_inner_rows();
+  const bool odd_row = _cart_coords[0] & 1;
+  const bool odd_col = _cart_coords[1] & 1;
+  double * const up_sendbuf    = &_u1[1 * x_span + 1];
+  double * const down_sendbuf  = &_u1[vertical_cells * x_span + 1];
+  double * const left_sendbuf  = up_sendbuf;
+  double * const right_sendbuf = &_u1[x_span + horizontal_cells];
+  double * const up_recvbuf    = &_u1[1];
+  double * const down_recvbuf  = &_u1[(vertical_cells + 1) * x_span + 1];
+  double * const left_recvbuf  = &_u1[x_span];
+  double * const right_recvbuf = &_u1[x_span + horizontal_cells + 1]; 
 
-  for (int req = 0; req < paircount; ++req) {
-    MPI_Request_free(&send_request[req]);
+  // STEP 1: Odd rows up, evens down. Note - odds always have top neighbour
+  if ((odd_row && has_top_neighbour()) || (!odd_row && has_bottom_neighbour())) {
+    MPI_Sendrecv(odd_row ? up_sendbuf : down_sendbuf,
+                 horizontal_cells,
+                 MPI_DOUBLE,
+                 odd_row ? _top_rank_or_neg: _bottom_rank_or_neg,
+                 TOP,
+                 odd_row ? up_recvbuf : down_recvbuf,
+                 horizontal_cells,
+                 MPI_DOUBLE,
+                 odd_row ? _top_rank_or_neg: _bottom_rank_or_neg,
+                 TOP,
+                 _cart_comm,
+                 &status);
+
   }
-  MPI_Waitall(paircount, recv_request, recv_status);
+  // STEP 2: Odd rows down, evens up
+  if ((odd_row && has_bottom_neighbour()) || (!odd_row && has_top_neighbour())) {
+    MPI_Sendrecv(odd_row ? down_sendbuf : up_sendbuf,
+                 horizontal_cells,
+                 MPI_DOUBLE,
+                 odd_row ? _bottom_rank_or_neg : _top_rank_or_neg,
+                 BOTTOM,
+                 odd_row ? down_recvbuf : up_recvbuf,
+                 horizontal_cells,
+                 MPI_DOUBLE,
+                 odd_row ? _bottom_rank_or_neg : _top_rank_or_neg,
+                 BOTTOM,
+                 _cart_comm,
+                 &status);
+  }
+  // STEP 3: Odd cols left, evens right
+  if ((odd_col && has_left_neighbour()) || (!odd_col && has_right_neighbour())) {
+  MPI_Sendrecv(odd_col ? left_sendbuf : right_sendbuf,
+               1,
+               _col_type,
+               odd_col ? _left_rank_or_neg: _right_rank_or_neg,
+               LEFT,
+               odd_col ? left_recvbuf : right_recvbuf,
+               1,
+               _col_type,
+               odd_col ? _left_rank_or_neg: _right_rank_or_neg,
+               LEFT,
+               _cart_comm,
+               &status);
+  }
+  // STEP 3: Odd cols right, evens left
+  if ((odd_col && has_right_neighbour()) || (!odd_col && has_left_neighbour())) {
+  MPI_Sendrecv(odd_col ? right_sendbuf : left_sendbuf,
+               1,
+               _col_type,
+               odd_col ? _right_rank_or_neg: _left_rank_or_neg,
+               RIGHT,
+               odd_col ? right_recvbuf : left_recvbuf,
+               1,
+               _col_type,
+               odd_col ? _right_rank_or_neg: _left_rank_or_neg,
+               RIGHT,
+               _cart_comm,
+               &status);
+  }
 }
 
-double * StaticMesh::get_u0() { return _u0; }
-double * StaticMesh::get_u1() { return _u1; }
-int StaticMesh::get_node_inner_rows() const { return _node_inner_rows; }
-int StaticMesh::get_node_inner_cols() const { return _node_inner_cols; }
-int StaticMesh::get_node_outer_rows() const { return _node_outer_rows; }
-int StaticMesh::get_node_outer_cols() const { return _node_outer_cols; }
-int StaticMesh::get_node_inner_cell_count() const {
+double * StaticBlockingMesh::get_u0() { return _u0; }
+double * StaticBlockingMesh::get_u1() { return _u1; }
+int StaticBlockingMesh::get_node_inner_rows() const { return _node_inner_rows; }
+int StaticBlockingMesh::get_node_inner_cols() const { return _node_inner_cols; }
+int StaticBlockingMesh::get_node_outer_rows() const { return _node_outer_rows; }
+int StaticBlockingMesh::get_node_outer_cols() const { return _node_outer_cols; }
+int StaticBlockingMesh::get_node_inner_cell_count() const {
   return get_node_inner_rows() * get_node_inner_cols();
 }
-int StaticMesh::get_node_outer_cell_count() const {
+int StaticBlockingMesh::get_node_outer_cell_count() const {
   return get_node_outer_rows() * get_node_outer_cols();
 }
-double StaticMesh::get_world_inner_rows() const { return _world_inner_rows; }
-double StaticMesh::get_world_inner_cols() const { return _world_inner_cols; }
-double StaticMesh::get_del_y() const { return _world_height / _world_inner_rows; }
-double StaticMesh::get_del_x() const { return _world_width / _world_inner_cols; }
+double StaticBlockingMesh::get_world_inner_rows() const { return _world_inner_rows; }
+double StaticBlockingMesh::get_world_inner_cols() const { return _world_inner_cols; }
+double StaticBlockingMesh::get_del_y() const { return _world_height / _world_inner_rows; }
+double StaticBlockingMesh::get_del_x() const { return _world_width / _world_inner_cols; }
 // NOTE!! be very careful with outer_ vs inner in the following functions as
 // inner are logically 1-padded around the boundary
 // inner assume that 0 is the logical first column..
-double StaticMesh::get_inner_row_y(int row_) const {
+double StaticBlockingMesh::get_inner_row_y(int row_) const {
   return _inner_origin_y + row_ * get_del_y();
 }
-double StaticMesh::get_inner_col_x(int col_) const {
+double StaticBlockingMesh::get_inner_col_x(int col_) const {
   return _inner_origin_x + col_ * get_del_x();
 }
 // NOTE - could be re-written to use outer_origin and not subtract 1 from row
-double StaticMesh::get_outer_row_y(int row_) const {
+double StaticBlockingMesh::get_outer_row_y(int row_) const {
   return _inner_origin_y + (row_ - 1) * get_del_y();
 }
-double StaticMesh::get_outer_col_x(int col_) const {
+double StaticBlockingMesh::get_outer_col_x(int col_) const {
   return _inner_origin_x + (col_ - 1) * get_del_x();
 }
 
-bool StaticMesh::has_top_neighbour() const {
+bool StaticBlockingMesh::has_top_neighbour() const {
   // We have a top neighbour if we are not on the first row
   return _cart_coords[0] != 0; 
 }
 
-bool StaticMesh::has_bottom_neighbour() const {
+bool StaticBlockingMesh::has_bottom_neighbour() const {
   // We have a bottom neighbour if we are not on the last row
   return _cart_coords[0] != _dim_nodes[0] - 1; 
 }
 
-bool StaticMesh::has_left_neighbour() const {
+bool StaticBlockingMesh::has_left_neighbour() const {
   // We have a left neighbour if we are not on the first column
   return _cart_coords[1] != 0; 
 }
 
-bool StaticMesh::has_right_neighbour() const {
+bool StaticBlockingMesh::has_right_neighbour() const {
   // We have a right neighbour if we are not on the last column
   return _cart_coords[1] != _dim_nodes[1] - 1; 
 }
