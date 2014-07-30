@@ -15,11 +15,11 @@ void Calculation::step(double dt_) {
 void Calculation::diffuse(double dt_) {
   double *u0 = _mesh->get_u0();
   double *u1 = _mesh->get_u1();
-  double dx = _mesh->get_del_x();
-  double dy = _mesh->get_del_y();
-  double rx = dt_ / (dx * dx);
-  double ry = dt_ / (dy * dy);
-  int x_span = _mesh->get_node_outer_cols();
+  const double dx = _mesh->get_del_x();
+  const double dy = _mesh->get_del_y();
+  const double rx = dt_ / (dx * dx);
+  const double ry = dt_ / (dy * dy);
+  const int x_span = _mesh->get_node_outer_cols();
   for (int i = 1; i < _mesh->get_node_inner_rows() + 1; ++i) {
     for (int j = 1; j < _mesh->get_node_inner_cols() + 1; ++j) {
       const int center = i * x_span + j;

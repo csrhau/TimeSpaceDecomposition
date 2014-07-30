@@ -25,7 +25,6 @@ class Mesh {
   // x, y signify physical (as opposed to logical) coordinates
   double get_del_y() const;
   double get_del_x() const;
-  // TODO work out offsets on global grid
   double get_inner_row_y(int row_) const;
   double get_inner_col_x(int col_) const;
   double get_outer_row_y(int row_) const;
@@ -39,6 +38,7 @@ class Mesh {
  private:
   const ConfigFile& _config;
   const MPI_Comm _cart_comm;
+  MPI_Datatype _col_type;
   std::vector<int> _cart_coords;
   // inner meaning not including boundaries, ghosts
   int _world_inner_rows;
@@ -50,11 +50,16 @@ class Mesh {
   double _inner_origin_x; 
   double _inner_origin_y;
   // Outer meaning boundaries, ghosts are included
-  int _node_outer_rows; 
+  int _node_outer_rows;
   int _node_outer_cols;
   int _cart_rank;
   const std::vector<int>& _dim_nodes;
   double *_u0;
   double *_u1;
+  int _top_rank_or_neg;
+  int _bottom_rank_or_neg;
+  int _left_rank_or_neg;
+  int _right_rank_or_neg;
+  void exchange_boundaries();
 };
 #endif

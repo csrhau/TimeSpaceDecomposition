@@ -11,10 +11,10 @@
 
 namespace {
   enum Boundary {
-    TOP = 0, 
-    BOTTOM = 1, 
-    LEFT = 2,
-    RIGHT = 3,
+    TOP = 1, 
+    BOTTOM = 2, 
+    LEFT = 3,
+    RIGHT = 4,
   };
 }
 
@@ -58,6 +58,36 @@ Mesh::Mesh(const ConfigFile& config_,
   _node_outer_cols = _node_inner_cols + 2;
   _u0 = new double[_node_outer_rows * _node_outer_cols];
   _u1 = new double[_node_outer_rows * _node_outer_cols];
+  // Create MPI vector datatype to deal with column sending.
+  MPI_Type_vector(_node_inner_rows, // # column height
+                  1,                // 1 column only
+                  _node_outer_cols, // x dimension span
+                  MPI_DOUBLE,
+                  &_col_type);
+  MPI_Type_commit(&_col_type);
+
+  // Compute ranks of neighbours
+  int coords[2];
+  if (has_top_neighbour()) {
+    coords[0] = _cart_coords[0] - 1;
+    coords[1] = _cart_coords[1];
+    MPI_Cart_rank(_cart_comm, coords, &_top_rank_or_neg);
+  }
+  if (has_bottom_neighbour()) {
+    coords[0] = _cart_coords[0] + 1;
+    coords[1] = _cart_coords[1];
+    MPI_Cart_rank(_cart_comm, coords, &_bottom_rank_or_neg);
+  }
+  if (has_left_neighbour()) {
+    coords[0] = _cart_coords[0];
+    coords[1] = _cart_coords[1] - 1;
+    MPI_Cart_rank(_cart_comm, coords, &_left_rank_or_neg);
+  }
+  if (has_right_neighbour()) {
+    coords[0] = _cart_coords[0];
+    coords[1] = _cart_coords[1] + 1;
+    MPI_Cart_rank(_cart_comm, coords, &_right_rank_or_neg);
+  }
 }
 
 Mesh::~Mesh() {
@@ -117,10 +147,56 @@ void Mesh::advance() {
   if (!has_right_neighbour()) {
     reflect_boundary(RIGHT);
   }
-  // TODO - do the sendy stuff
+  exchange_boundaries();
+  // Now we've finished updating u1, we can swap it to u0
   std::swap(_u0, _u1);
 }
 
+void Mesh::exchange_boundaries() {
+  // Use a very simple | 0 | 1 | 0 | 1 | scheme
+  // 0 sends right, 1 sends left, then flip
+  const int x_span = get_node_outer_cols();
+  const int horizontal_cells = get_node_inner_cols();
+  int paircount = 0;
+  MPI_Request send_request[4]; // Has to be present but are not consulted
+  MPI_Request recv_request[4];
+  MPI_Status  recv_status[4];
+  if (has_top_neighbour()){
+    const int i = 0;
+    const int j = 1;
+    MPI_Isend(&_u1[(i + 1) * x_span + j], horizontal_cells, MPI_DOUBLE, _top_rank_or_neg, TOP, _cart_comm, &send_request[paircount]);
+    MPI_Irecv(&_u1[i * x_span + j], horizontal_cells, MPI_DOUBLE, _top_rank_or_neg, BOTTOM, _cart_comm, &recv_request[paircount]);
+    ++paircount;
+  }
+  if (has_bottom_neighbour()){
+    const int i = get_node_inner_rows();
+    const int j = 1;
+    MPI_Isend(&_u1[i * x_span + j], horizontal_cells, MPI_DOUBLE, _bottom_rank_or_neg, BOTTOM, _cart_comm, &send_request[paircount]);
+    MPI_Irecv(&_u1[(i + 1) * x_span + j], horizontal_cells, MPI_DOUBLE, _bottom_rank_or_neg, TOP, _cart_comm, &recv_request[paircount]);
+    ++paircount;
+  }
+  if (has_left_neighbour()) {
+    const int i = 1;
+    const int j = 0;
+    // irecv to i, j; isend from i, j+1
+    MPI_Isend(&_u1[i * x_span + (j + 1)], 1, _col_type, _left_rank_or_neg, LEFT, _cart_comm, &send_request[paircount]);
+    MPI_Irecv(&_u1[i * x_span + j], 1, _col_type, _left_rank_or_neg, RIGHT, _cart_comm, &recv_request[paircount]);
+    ++paircount;
+  }
+  if (has_right_neighbour()) {
+    const int i = 1; 
+    const int j = get_node_inner_rows();
+    // irecv to i, j+1; isend from i, j
+    MPI_Isend(&_u1[i * x_span + j], 1, _col_type, _right_rank_or_neg, RIGHT, _cart_comm, &send_request[paircount]);
+    MPI_Irecv(&_u1[i * x_span + (j + 1)], 1, _col_type, _right_rank_or_neg, LEFT, _cart_comm, &recv_request[paircount]);
+    ++paircount;
+  }
+
+  for (int req = 0; req < paircount; ++req) {
+    MPI_Request_free(&send_request[req]);
+  }
+  MPI_Waitall(paircount, recv_request, recv_status);
+}
 
 double * Mesh::get_u0() { return _u0; }
 double * Mesh::get_u1() { return _u1; }

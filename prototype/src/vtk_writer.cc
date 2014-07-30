@@ -46,9 +46,7 @@ void VtkWriter::write(int step, double time)
              << rank
              << ".vtk" << std::endl;
       }
-      ofs.flush();
       ofs.close();
-      std::cout << "Written to file!" << std::endl;
     }
     writeVtk(step, time);
 }

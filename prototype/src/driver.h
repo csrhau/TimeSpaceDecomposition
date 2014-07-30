@@ -16,7 +16,7 @@ class Driver {
   void run();
 
  private:
-  double total_temp() const;
+  double local_temp() const;
   bool _debug;
   std::string _name;
   int _visualization_rate;

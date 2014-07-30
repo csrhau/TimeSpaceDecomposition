@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <iostream>
 
+#include "tools-inl.h"
 #include "config_file.h"
 #include "vtk_writer.h"
 #include "data_source.h"
@@ -48,18 +49,26 @@ Driver::~Driver(){
 
 void Driver::run() {
   VtkWriter writer(_name, _mesh, _world_rank, _world_size);
+  double wall_start, wall_stop;
+  double cpu_start, cpu_stop;
   if (_debug) {
     std::cout << " ++ RUN BEGINNING ++ " << std::endl;
   }
+  timers(wall_start, cpu_start); // start timing
   int step = 0;
   double t_now = _t_start;
   while (t_now < _t_end) { // doublecompare
     if (step % _visualization_rate == 0) {
       writer.write(step, t_now);
       if (_debug) {
+        double temp = local_temp();
+        double global_temp = 0;
+        MPI_Reduce(&temp, &global_temp, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        if (_world_rank == 0) {
         std::cout << " Outputting vtk file for step " << step << ",\n\ttnow = "
                   << t_now << ",\n\tvis rate:" << _visualization_rate 
-                  << "\n\ttotal temp:" << total_temp() <<  std::endl;
+                  << "\n\ttotal temp:" << global_temp <<  std::endl;
+        }
       }
     }
     _calculation->step(_del_t);
@@ -68,12 +77,19 @@ void Driver::run() {
     t_now += _del_t;
   }
   writer.write(step, t_now);
+  timers(wall_stop, cpu_stop); // stop timing
   if (_debug) {
     std::cout << " ++ RUN FINISHING ++ " << std::endl;
   }
+  // Output timing information
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (_world_rank == 0) {
+    std::cout << "Timings: wallclock:" << (wall_stop - wall_start) << "s\n"
+                 "         cpu clock:" << (cpu_stop - cpu_start) << std::endl;
+  }
 }
 
-double Driver::total_temp() const {
+double Driver::local_temp() const {
   double total = 0;
   int x_span = _mesh->get_node_outer_cols();
   double *u0 = _mesh->get_u0();

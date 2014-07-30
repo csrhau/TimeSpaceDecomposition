@@ -1,10 +1,10 @@
 debug true
-logical_dimensions 100 100
+logical_dimensions 2000 2000
 physical_dimensions 100.0 100.0
 start_time 0.0
-end_time 7.0
-timestep 0.01
+end_time 0.1
+timestep 0.001
 subregions 20.1 20.1 80.1 80.1
-visualization_rate 7
+visualization_rate 5
 #dim_nodes 3 1
 # TODO dimension_nodes 1 4 # rows cols
