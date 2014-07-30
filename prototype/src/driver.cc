@@ -1,13 +1,18 @@
 #include "driver.h"
 
 #include <mpi.h>
+#include <string>
+#include <sstream>
 #include <iostream>
+#include <stdexcept>
 
 #include "tools-inl.h"
 #include "config_file.h"
 #include "vtk_writer.h"
 #include "data_source.h"
 #include "mesh.h"
+#include "static_mesh.h"
+#include "dynamic_mesh.h"
 #include "calculation.h"
 
 Driver::Driver(const ConfigFile& config_) : _config(config_) {
@@ -35,7 +40,20 @@ Driver::Driver(const ConfigFile& config_) : _config(config_) {
                   _mpi_reorder,
                   &_cart_comm);
   // Initialize Mesh (and calculation)
-  _mesh = new Mesh(_config, _cart_comm, _dim_nodes);
+  _mesh_type = _config.get_or_default("mesh_type", std::string("static"));
+  if (_mesh_type == "static") {
+    _mesh = new StaticMesh(_config, _cart_comm, _dim_nodes);
+  } else if (_mesh_type == "dynamic") {
+    _mesh = new DynamicMesh(_config, _cart_comm, _dim_nodes);
+  } else {
+    std::stringstream ss;
+    ss << "Unknown mesh type: " << _mesh_type << std::endl;
+    throw std::logic_error(ss.str());
+  }
+  std::stringstream ss;
+  ss << _name << "_" << _mesh_type;
+  _outfile_tag = ss.str();
+
   _calculation = new Calculation(_config, _mesh);
   // Datasource initialize
   DataSource ds(_config);
@@ -48,7 +66,7 @@ Driver::~Driver(){
 }
 
 void Driver::run() {
-  VtkWriter writer(_name, _mesh, _world_rank, _world_size);
+  VtkWriter writer(_outfile_tag, _mesh, _world_rank, _world_size);
   double wall_start, wall_stop;
   double cpu_start, cpu_stop;
   if (_debug) {

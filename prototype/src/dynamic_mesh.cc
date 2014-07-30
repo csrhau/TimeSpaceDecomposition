@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "dynamic_mesh.h"
 
 #include <mpi.h>
 #include <iostream>
@@ -18,7 +18,7 @@ namespace {
   };
 }
 
-Mesh::Mesh(const ConfigFile& config_, 
+DynamicMesh::DynamicMesh(const ConfigFile& config_, 
            MPI_Comm cart_comm_,
            const std::vector<int>& dim_nodes_) : _config(config_), 
                                                  _cart_comm(cart_comm_),
@@ -90,12 +90,12 @@ Mesh::Mesh(const ConfigFile& config_,
   }
 }
 
-Mesh::~Mesh() {
+DynamicMesh::~DynamicMesh() {
   delete[] _u0;
   delete[] _u1;
 }
 
-void Mesh::reflect_boundary(int boundary_) {
+void DynamicMesh::reflect_boundary(int boundary_) {
   // n.b. use u1 as we're in the current timestep
   int x_span = get_node_outer_cols();
   switch (boundary_) {
@@ -134,7 +134,7 @@ void Mesh::reflect_boundary(int boundary_) {
   }
 }
 
-void Mesh::advance() {
+void DynamicMesh::advance() {
   if (!has_top_neighbour()) {
     reflect_boundary(TOP);
   }
@@ -152,7 +152,7 @@ void Mesh::advance() {
   std::swap(_u0, _u1);
 }
 
-void Mesh::exchange_boundaries() {
+void DynamicMesh::exchange_boundaries() {
   // Use a very simple | 0 | 1 | 0 | 1 | scheme
   // 0 sends right, 1 sends left, then flip
   const int x_span = get_node_outer_cols();
@@ -198,55 +198,55 @@ void Mesh::exchange_boundaries() {
   MPI_Waitall(paircount, recv_request, recv_status);
 }
 
-double * Mesh::get_u0() { return _u0; }
-double * Mesh::get_u1() { return _u1; }
-int Mesh::get_node_inner_rows() const { return _node_inner_rows; }
-int Mesh::get_node_inner_cols() const { return _node_inner_cols; }
-int Mesh::get_node_outer_rows() const { return _node_outer_rows; }
-int Mesh::get_node_outer_cols() const { return _node_outer_cols; }
-int Mesh::get_node_inner_cell_count() const {
+double * DynamicMesh::get_u0() { return _u0; }
+double * DynamicMesh::get_u1() { return _u1; }
+int DynamicMesh::get_node_inner_rows() const { return _node_inner_rows; }
+int DynamicMesh::get_node_inner_cols() const { return _node_inner_cols; }
+int DynamicMesh::get_node_outer_rows() const { return _node_outer_rows; }
+int DynamicMesh::get_node_outer_cols() const { return _node_outer_cols; }
+int DynamicMesh::get_node_inner_cell_count() const {
   return get_node_inner_rows() * get_node_inner_cols();
 }
-int Mesh::get_node_outer_cell_count() const {
+int DynamicMesh::get_node_outer_cell_count() const {
   return get_node_outer_rows() * get_node_outer_cols();
 }
-double Mesh::get_world_inner_rows() const { return _world_inner_rows; }
-double Mesh::get_world_inner_cols() const { return _world_inner_cols; }
-double Mesh::get_del_y() const { return _world_height / _world_inner_rows; }
-double Mesh::get_del_x() const { return _world_width / _world_inner_cols; }
+double DynamicMesh::get_world_inner_rows() const { return _world_inner_rows; }
+double DynamicMesh::get_world_inner_cols() const { return _world_inner_cols; }
+double DynamicMesh::get_del_y() const { return _world_height / _world_inner_rows; }
+double DynamicMesh::get_del_x() const { return _world_width / _world_inner_cols; }
 // NOTE!! be very careful with outer_ vs inner in the following functions as
 // inner are logically 1-padded around the boundary
 // inner assume that 0 is the logical first column..
-double Mesh::get_inner_row_y(int row_) const {
+double DynamicMesh::get_inner_row_y(int row_) const {
   return _inner_origin_y + row_ * get_del_y();
 }
-double Mesh::get_inner_col_x(int col_) const {
+double DynamicMesh::get_inner_col_x(int col_) const {
   return _inner_origin_x + col_ * get_del_x();
 }
 // NOTE - could be re-written to use outer_origin and not subtract 1 from row
-double Mesh::get_outer_row_y(int row_) const {
+double DynamicMesh::get_outer_row_y(int row_) const {
   return _inner_origin_y + (row_ - 1) * get_del_y();
 }
-double Mesh::get_outer_col_x(int col_) const {
+double DynamicMesh::get_outer_col_x(int col_) const {
   return _inner_origin_x + (col_ - 1) * get_del_x();
 }
 
-bool Mesh::has_top_neighbour() const {
+bool DynamicMesh::has_top_neighbour() const {
   // We have a top neighbour if we are not on the first row
   return _cart_coords[0] != 0; 
 }
 
-bool Mesh::has_bottom_neighbour() const {
+bool DynamicMesh::has_bottom_neighbour() const {
   // We have a bottom neighbour if we are not on the last row
   return _cart_coords[0] != _dim_nodes[0] - 1; 
 }
 
-bool Mesh::has_left_neighbour() const {
+bool DynamicMesh::has_left_neighbour() const {
   // We have a left neighbour if we are not on the first column
   return _cart_coords[1] != 0; 
 }
 
-bool Mesh::has_right_neighbour() const {
+bool DynamicMesh::has_right_neighbour() const {
   // We have a right neighbour if we are not on the last column
   return _cart_coords[1] != _dim_nodes[1] - 1; 
 }
