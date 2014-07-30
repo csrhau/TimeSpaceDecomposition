@@ -1,14 +1,15 @@
 #ifndef MESH_H
 #define MESH_H
+#include "mesh_base.h" 
 #include <mpi.h>
 #include <vector>
 class ConfigFile;
-class Mesh {
+class Mesh : public MeshBase {
  public:
   Mesh(const ConfigFile& config_,
        MPI_Comm cart_comm_,
        const std::vector<int>& dim_nodes_);
-  ~Mesh();
+  virtual ~Mesh();
 
   void advance();
   void reflect_boundary(int boundary_);
