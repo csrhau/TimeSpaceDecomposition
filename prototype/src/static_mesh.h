@@ -1,10 +1,10 @@
 #ifndef STATIC_MESH_H
 #define STATIC_MESH_H
-#include "mesh.h" 
+#include "distributed_mesh.h" 
 #include <mpi.h>
 #include <vector>
 class ConfigFile;
-class StaticMesh : public Mesh {
+class StaticMesh : public DistributedMesh {
  public:
   StaticMesh(const ConfigFile& config_,
        MPI_Comm cart_comm_,

@@ -1,10 +1,10 @@
 #ifndef STATIC_BLOCKING_MESH_H
 #define STATIC_BLOCKING_MESH_H
-#include "mesh.h" 
+#include "distributed_mesh.h" 
 #include <mpi.h>
 #include <vector>
 class ConfigFile;
-class StaticBlockingMesh : public Mesh {
+class StaticBlockingMesh : public DistributedMesh {
  public:
   StaticBlockingMesh(const ConfigFile& config_,
        MPI_Comm cart_comm_,

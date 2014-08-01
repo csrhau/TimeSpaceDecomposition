@@ -6,8 +6,6 @@
 #include <stdexcept>
 #include <fstream>
 
-typedef std::map<std::string, std::string>::const_iterator config_iterator;
-
 ConfigFile::ConfigFile(const char *filename_) : _filename(filename_) {
   std::ifstream ifs(filename_);
   if (!ifs.good()) {
