@@ -13,7 +13,6 @@
 #include "mesh.h"
 #include "static_mesh.h"
 #include "static_blocking_mesh.h"
-#include "dynamic_mesh.h"
 #include "calculation.h"
 
 Driver::Driver(const ConfigFile& config_) : _config(config_) {
@@ -44,8 +43,6 @@ Driver::Driver(const ConfigFile& config_) : _config(config_) {
   _mesh_type = _config.get_or_default("mesh_type", std::string("static"));
   if (_mesh_type == "static") {
     _mesh = new StaticMesh(_config, _cart_comm, _dim_nodes);
-  } else if (_mesh_type == "dynamic") {
-    _mesh = new DynamicMesh(_config, _cart_comm, _dim_nodes);
   } else if (_mesh_type == "static_blocking") {
     _mesh = new StaticBlockingMesh(_config, _cart_comm, _dim_nodes);
   } else {
