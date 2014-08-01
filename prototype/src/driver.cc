@@ -109,10 +109,10 @@ void Driver::run() {
 
 double Driver::local_temp() const {
   double total = 0;
-  int x_span = _mesh->get_node_outer_cols();
+  int x_span = _mesh->get_node_augmented_col_count();
   double *u0 = _mesh->get_u0();
-  for (int i = 1; i < _mesh->get_node_inner_rows() + 1; ++i) {
-    for (int j = 1; j < _mesh->get_node_inner_cols() + 1; ++j) {
+  for (int i = 1; i < _mesh->get_node_core_row_count() + 1; ++i) {
+    for (int j = 1; j < _mesh->get_node_core_col_count() + 1; ++j) {
       total += u0[i * x_span + j];
     }
   }

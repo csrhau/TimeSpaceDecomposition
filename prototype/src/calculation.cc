@@ -19,9 +19,9 @@ void Calculation::diffuse(double dt_) {
   const double dy = _mesh->get_del_y();
   const double rx = dt_ / (dx * dx);
   const double ry = dt_ / (dy * dy);
-  const int x_span = _mesh->get_node_outer_cols();
-  for (int i = 1; i < _mesh->get_node_inner_rows() + 1; ++i) {
-    for (int j = 1; j < _mesh->get_node_inner_cols() + 1; ++j) {
+  const int x_span = _mesh->get_node_augmented_col_count();
+  for (int i = 1; i < _mesh->get_node_core_row_count() + 1; ++i) {
+    for (int j = 1; j < _mesh->get_node_core_col_count() + 1; ++j) {
       const int center = i * x_span + j;
       const int top = (i - 1) * x_span + j;
       const int bottom = (i + 1) * x_span + j;

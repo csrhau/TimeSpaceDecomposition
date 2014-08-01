@@ -78,19 +78,19 @@ void VtkWriter::writeVtk(int step, double time)
     file << "CYCLE 1 1 int" << std::endl;
     file << step << std::endl;
     // 2D - Note we need internals +1 due to fencepost effec
-    int horizontal_points = _mesh->get_node_inner_cols() + 1;
-    int vertical_points = _mesh->get_node_inner_rows() + 1;
+    int horizontal_points = _mesh->get_node_core_col_count() + 1;
+    int vertical_points = _mesh->get_node_core_row_count() + 1;
     file << "DIMENSIONS " << horizontal_points << " " << vertical_points 
          << " 1" << std::endl;
 
     file << "X_COORDINATES " << horizontal_points << " float" << std::endl;
     for(int j = 0; j < horizontal_points; ++j) {
-        file << _mesh->get_outer_col_x(j) << " ";
+        file << _mesh->get_x_coord(j) << " ";
     }
     file << std::endl;
     file << "Y_COORDINATES " << vertical_points << " float" << std::endl;
     for(int i = 0; i < vertical_points; ++i) {
-        file << _mesh->get_outer_row_y(i) << " ";
+        file << _mesh->get_y_coord(i) << " ";
     }
     file << std::endl;
 
@@ -98,17 +98,17 @@ void VtkWriter::writeVtk(int step, double time)
     file << "0.0000" << std::endl;
 
 
-    file << "CELL_DATA " << _mesh->get_node_inner_cell_count() << std::endl;
+    file << "CELL_DATA " << _mesh->get_node_core_cell_count() << std::endl;
 
     file << "FIELD FieldData 1" << std::endl;
 
-    file << "u 1 " << _mesh->get_node_inner_cell_count() << " double" <<  std::endl;
+    file << "u 1 " << _mesh->get_node_core_cell_count() << " double" <<  std::endl;
 
-    int x_span = _mesh->get_node_outer_cols();
+    int x_span = _mesh->get_node_augmented_col_count();
     double *u0 = _mesh->get_u0();
     // N.B. Deal with padding
-    for (int i = 1; i < _mesh->get_node_inner_rows() + 1; ++i) {
-      for (int j = 1; j < _mesh->get_node_inner_cols() + 1; ++j) {
+    for (int i = 1; i < _mesh->get_node_core_row_count() + 1; ++i) {
+      for (int j = 1; j < _mesh->get_node_core_col_count() + 1; ++j) {
         file << u0[i * x_span + j] << " ";
       }
       file << std::endl;

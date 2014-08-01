@@ -26,10 +26,10 @@ StaticBlockingMesh::StaticBlockingMesh(const ConfigFile& config_,
   MPI_Comm_rank(_cart_comm, &_cart_rank);
   // Calculate our simulation domain
   // Space not including ghost cells and boundary padding
-  std::vector<int> inner_dimensions = _config.get_or_default("logical_dimensions",
+  std::vector<int> core_dimensions = _config.get_or_default("logical_dimensions",
                                                              std::vector<int>());
-  _world_inner_rows = inner_dimensions.at(0);
-  _world_inner_cols = inner_dimensions.at(1);
+  _world_core_row_count = core_dimensions.at(0);
+  _world_core_col_count = core_dimensions.at(1);
   std::vector<double> physical_dimensions = _config.get_or_default("physical_dimensions",
                                                              std::vector<double>());
   _world_height = physical_dimensions.at(0);
@@ -38,30 +38,30 @@ StaticBlockingMesh::StaticBlockingMesh(const ConfigFile& config_,
   _cart_coords.resize(2, 0); 
   MPI_Cart_coords(_cart_comm, _cart_rank, 2, &_cart_coords[0]);
 
-  _node_inner_rows = calculate_local_span(_cart_coords.at(0),
+  _node_core_row_count = calculate_local_span(_cart_coords.at(0),
                                           _dim_nodes.at(0),
-                                          inner_dimensions.at(0));
-  _node_inner_cols = calculate_local_span(_cart_coords.at(1),
+                                          core_dimensions.at(0));
+  _node_core_col_count = calculate_local_span(_cart_coords.at(1),
                                           _dim_nodes.at(1),
-                                          inner_dimensions.at(1));
+                                          core_dimensions.at(1));
   // TODO: If we ever want non-zero origins, we need to add the offset here
-  _inner_origin_y = get_del_y() * calculate_local_offset(_cart_coords.at(0),
+  _core_origin_y = get_del_y() * calculate_local_offset(_cart_coords.at(0),
                                                          _dim_nodes.at(0),
-                                                         inner_dimensions.at(0));
+                                                         core_dimensions.at(0));
 
-  _inner_origin_x = get_del_x() * calculate_local_offset(_cart_coords.at(1),
+  _core_origin_x = get_del_x() * calculate_local_offset(_cart_coords.at(1),
                                                          _dim_nodes.at(1),
-                                                         inner_dimensions.at(1));
+                                                         core_dimensions.at(1));
 
 
-  _node_outer_rows = _node_inner_rows + 2;
-  _node_outer_cols = _node_inner_cols + 2;
-  _u0 = new double[_node_outer_rows * _node_outer_cols];
-  _u1 = new double[_node_outer_rows * _node_outer_cols];
+  _node_augmented_row_count = _node_core_row_count + 2;
+  _node_augmented_col_count = _node_core_col_count + 2;
+  _u0 = new double[_node_augmented_row_count * _node_augmented_col_count];
+  _u1 = new double[_node_augmented_row_count * _node_augmented_col_count];
   // Create MPI vector datatype to deal with column sending.
-  MPI_Type_vector(_node_inner_rows, // # column height
+  MPI_Type_vector(_node_core_row_count, // # column height
                   1,                // 1 column only
-                  _node_outer_cols, // x dimension span
+                  _node_augmented_col_count, // x dimension span
                   MPI_DOUBLE,
                   &_col_type);
   MPI_Type_commit(&_col_type);
@@ -97,19 +97,19 @@ StaticBlockingMesh::~StaticBlockingMesh() {
 
 void StaticBlockingMesh::reflect_boundary(int boundary_) {
   // n.b. use u1 as we're in the current timestep
-  int x_span = get_node_outer_cols();
+  int x_span = get_node_augmented_col_count();
   switch (boundary_) {
     case (TOP): {
       int i = 1;
-      for (int j = 1; j < get_node_inner_cols() + 1; ++j) {
+      for (int j = 1; j < get_node_core_col_count() + 1; ++j) {
         const int top = (i - 1) * x_span + j;
         const int center = i * x_span + j;
         _u1[top] = _u1[center];
       } 
     } break;
     case (BOTTOM): {
-      int i = get_node_inner_rows(); // - n.b. this includes bound
-      for (int j = 1; j < get_node_inner_cols() + 1; ++j) {
+      int i = get_node_core_row_count(); // - n.b. this includes bound
+      for (int j = 1; j < get_node_core_col_count() + 1; ++j) {
         const int bottom = (i + 1) * x_span + j;
         const int center = i * x_span + j;
         _u1[bottom] = _u1[center];
@@ -117,15 +117,15 @@ void StaticBlockingMesh::reflect_boundary(int boundary_) {
     } break;
     case (LEFT): {
       int j = 1; 
-      for (int i = 1; i < get_node_inner_rows() + 1; ++i) {
+      for (int i = 1; i < get_node_core_row_count() + 1; ++i) {
         const int left = i * x_span + (j - 1);
         const int center = i * x_span + j;
         _u1[left] = _u1[center];
       }
     } break;
     case (RIGHT): {
-      int j = get_node_inner_cols(); // again includes bound
-      for (int i = 1; i < get_node_inner_rows() + 1; ++i) {
+      int j = get_node_core_col_count(); // again includes bound
+      for (int i = 1; i < get_node_core_row_count() + 1; ++i) {
         const int right = i * x_span + (j + 1);
         const int center = i * x_span + j;
         _u1[right] = _u1[center];
@@ -159,9 +159,9 @@ void StaticBlockingMesh::exchange_boundaries() {
   // Rowwise, odd left, even right       - TAGGED LEFT
   // Rowwise, odd right, even left       - TAGGED RIGHT
   MPI_Status status;
-  const int x_span = get_node_outer_cols();
-  const int horizontal_cells = get_node_inner_cols();
-  const int vertical_cells = get_node_inner_rows();
+  const int x_span = get_node_augmented_col_count();
+  const int horizontal_cells = get_node_core_col_count();
+  const int vertical_cells = get_node_core_row_count();
   const bool odd_row = _cart_coords[0] & 1;
   const bool odd_col = _cart_coords[1] & 1;
   double * const up_sendbuf    = &_u1[1 * x_span + 1];
@@ -238,35 +238,35 @@ void StaticBlockingMesh::exchange_boundaries() {
 
 double * StaticBlockingMesh::get_u0() { return _u0; }
 double * StaticBlockingMesh::get_u1() { return _u1; }
-int StaticBlockingMesh::get_node_inner_rows() const { return _node_inner_rows; }
-int StaticBlockingMesh::get_node_inner_cols() const { return _node_inner_cols; }
-int StaticBlockingMesh::get_node_outer_rows() const { return _node_outer_rows; }
-int StaticBlockingMesh::get_node_outer_cols() const { return _node_outer_cols; }
-int StaticBlockingMesh::get_node_inner_cell_count() const {
-  return get_node_inner_rows() * get_node_inner_cols();
+int StaticBlockingMesh::get_node_core_row_count() const { return _node_core_row_count; }
+int StaticBlockingMesh::get_node_core_col_count() const { return _node_core_col_count; }
+int StaticBlockingMesh::get_node_augmented_row_count() const { return _node_augmented_row_count; }
+int StaticBlockingMesh::get_node_augmented_col_count() const { return _node_augmented_col_count; }
+int StaticBlockingMesh::get_node_core_cell_count() const {
+  return get_node_core_row_count() * get_node_core_col_count();
 }
-int StaticBlockingMesh::get_node_outer_cell_count() const {
-  return get_node_outer_rows() * get_node_outer_cols();
+int StaticBlockingMesh::get_node_augmented_cell_count() const {
+  return get_node_augmented_row_count() * get_node_augmented_col_count();
 }
-double StaticBlockingMesh::get_world_inner_rows() const { return _world_inner_rows; }
-double StaticBlockingMesh::get_world_inner_cols() const { return _world_inner_cols; }
-double StaticBlockingMesh::get_del_y() const { return _world_height / _world_inner_rows; }
-double StaticBlockingMesh::get_del_x() const { return _world_width / _world_inner_cols; }
-// NOTE!! be very careful with outer_ vs inner in the following functions as
-// inner are logically 1-padded around the boundary
-// inner assume that 0 is the logical first column..
-double StaticBlockingMesh::get_inner_row_y(int row_) const {
-  return _inner_origin_y + row_ * get_del_y();
+double StaticBlockingMesh::get_world_core_row_count() const { return _world_core_row_count; }
+double StaticBlockingMesh::get_world_core_col_count() const { return _world_core_col_count; }
+double StaticBlockingMesh::get_del_y() const { return _world_height / _world_core_row_count; }
+double StaticBlockingMesh::get_del_x() const { return _world_width / _world_core_col_count; }
+// NOTE!! be very careful with augmented_ vs core in the following functions as
+// core are logically 1-padded around the boundary
+// core assume that 0 is the logical first column..
+double StaticBlockingMesh::get_core_row_y(int row_) const {
+  return _core_origin_y + row_ * get_del_y();
 }
-double StaticBlockingMesh::get_inner_col_x(int col_) const {
-  return _inner_origin_x + col_ * get_del_x();
+double StaticBlockingMesh::get_core_col_x(int col_) const {
+  return _core_origin_x + col_ * get_del_x();
 }
-// NOTE - could be re-written to use outer_origin and not subtract 1 from row
-double StaticBlockingMesh::get_outer_row_y(int row_) const {
-  return _inner_origin_y + (row_ - 1) * get_del_y();
+// NOTE - could be re-written to use augmented_origin and not subtract 1 from row
+double StaticBlockingMesh::get_y_coord(int row_) const {
+  return _core_origin_y + (row_ - 1) * get_del_y();
 }
-double StaticBlockingMesh::get_outer_col_x(int col_) const {
-  return _inner_origin_x + (col_ - 1) * get_del_x();
+double StaticBlockingMesh::get_x_coord(int col_) const {
+  return _core_origin_x + (col_ - 1) * get_del_x();
 }
 
 bool StaticBlockingMesh::has_top_neighbour() const {

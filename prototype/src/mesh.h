@@ -10,14 +10,17 @@ class Mesh {
   virtual double * get_u1() = 0;
   virtual double get_del_x() const = 0;
   virtual double get_del_y() const = 0;
-  virtual double get_outer_col_x(int i_) const = 0;
-  virtual double get_outer_row_y(int j_) const = 0;
-  virtual int get_node_inner_rows() const = 0;
-  virtual int get_node_inner_cols() const = 0;
-  virtual int get_node_outer_rows() const = 0;
-  virtual int get_node_outer_cols() const = 0;
-  virtual int get_node_inner_cell_count() const = 0;
-  virtual int get_node_outer_cell_count() const = 0;
+  // These get the coordinates of a row, column in our matrix
+  // NOTE: This includes the padded/ghost cells!
+  virtual double get_x_coord(int j_) const = 0; 
+  virtual double get_y_coord(int i_) const = 0; 
+  virtual int get_node_core_row_count() const = 0;
+  virtual int get_node_core_col_count() const = 0;
+  virtual int get_node_augmented_row_count() const = 0;
+  virtual int get_node_augmented_col_count() const = 0;
+  virtual int get_node_core_cell_count() const = 0;
+  virtual int get_node_augmented_cell_count() const = 0;
+
 };
 
 inline Mesh::~Mesh() {}
