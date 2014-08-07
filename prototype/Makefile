@@ -15,7 +15,7 @@ BINARY := $(BUILDDIR)/$(PRODUCT)
 
 # gcc flags:
 CXX := mpic++
-CXXFLAGS_DEBUG := -g -DDEBUG -Wall -p
+CXXFLAGS_DEBUG := -g -DDEBUG -Wall
 CXXFLAGS_OPT := -O3
 CXXFLAGS_OPENMP := -fopenmp
 
@@ -34,7 +34,7 @@ all : $(BINARY)
 $(BINARY) : $(OBJS)
 	@echo linking $@
 	$(maketargetdir)
-	$(LD) $(LDFLAGS) -p -o $@ $^
+	$(LD) $(LDFLAGS) -o $@ $^
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cc
 	@echo compiling $<
