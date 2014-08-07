@@ -19,8 +19,9 @@
 Driver::Driver(const ConfigFile& config_) : _config(config_) {
   // Read configuration
   _debug = _config.get_or_default("debug", false);
+  _visualize = _config.get_or_default("visualize", true);
   _name = _config.get_or_default("name", std::string("prototype"));
-  _visualization_rate = _config.get_or_default("visualization_rate", 1);
+  _output_rate = _config.get_or_default("output_rate", 1);
   _t_start = _config.get_or_default("start_time", 0.0);
   _t_end = _config.get_or_default("end_time", 2.0);
   _del_t = _config.get_or_default("timestep", 0.02);
@@ -79,15 +80,17 @@ void Driver::run() {
   int step = 0;
   double t_now = _t_start;
   while (t_now < _t_end) { // doublecompare
-    if (step % _visualization_rate == 0) {
-      writer.write(step, t_now);
+    if (step % _output_rate == 0) {
+      if (_visualize) {
+        writer.write(step, t_now);
+      }
       if (_debug) {
         double temp = local_temp();
         double global_temp = 0;
         MPI_Reduce(&temp, &global_temp, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         if (_world_rank == 0) {
         std::cout << " Outputting vtk file for step " << step << ",\n\ttnow = "
-                  << t_now << ",\n\tvis rate:" << _visualization_rate 
+                  << t_now << ",\n\tvis rate:" << _output_rate 
                   << "\n\ttotal temp:" << global_temp <<  std::endl;
         }
       }
@@ -97,7 +100,9 @@ void Driver::run() {
     ++step;
     t_now += _del_t;
   }
-  writer.write(step, t_now);
+  if (_visualize) {
+    writer.write(step, t_now);
+  }
   timers(wall_stop, cpu_stop); // stop timing
   if (_debug) {
     std::cout << " ++ RUN FINISHING ++ " << std::endl;

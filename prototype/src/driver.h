@@ -18,10 +18,11 @@ class Driver {
  private:
   double local_temp() const;
   bool _debug;
+  bool _visualize; 
   std::string _name;
   std::string _mesh_type;
   std::string _outfile_tag;
-  int _visualization_rate;
+  int _output_rate;
   double _t_start;
   double _t_end;
   double _del_t;
