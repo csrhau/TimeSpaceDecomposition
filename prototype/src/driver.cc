@@ -13,6 +13,7 @@
 #include "mesh.h"
 #include "static_mesh.h"
 #include "static_blocking_mesh.h"
+#include "dynamic_mesh.h"
 #include "calculation.h"
 
 Driver::Driver(const ConfigFile& config_) : _config(config_) {
@@ -45,6 +46,8 @@ Driver::Driver(const ConfigFile& config_) : _config(config_) {
     _mesh = new StaticMesh(_config, _cart_comm, _dim_nodes);
   } else if (_mesh_type == "static_blocking") {
     _mesh = new StaticBlockingMesh(_config, _cart_comm, _dim_nodes);
+   } else if (_mesh_type == "dynamic") {
+    _mesh = new DynamicMesh(_config, _cart_comm, _dim_nodes);
   } else {
     std::stringstream ss;
     ss << "Unknown mesh type: " << _mesh_type << std::endl;
@@ -109,10 +112,12 @@ void Driver::run() {
 
 double Driver::local_temp() const {
   double total = 0;
-  int x_span = _mesh->get_node_augmented_col_count();
   double *u0 = _mesh->get_u0();
-  for (int i = 1; i < _mesh->get_node_core_row_count() + 1; ++i) {
-    for (int j = 1; j < _mesh->get_node_core_col_count() + 1; ++j) {
+  const int x_span = _mesh->get_node_augmented_col_count();
+  const int i_offset = _mesh->get_current_row_offset();
+  const int j_offset = _mesh->get_current_col_offset();
+  for (int i = i_offset; i < _mesh->get_node_core_row_count() + i_offset; ++i) {
+    for (int j = j_offset; j < _mesh->get_node_core_col_count() + j_offset; ++j) {
       total += u0[i * x_span + j];
     }
   }

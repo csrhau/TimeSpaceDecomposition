@@ -32,7 +32,13 @@ prototype/build/
 *.vtk
 *.visit
 
+# pbs/run stuff
+*.pbs
+*.cfg
+
 #Latex cruft
 *.aux
 *.log
 *.synctex.gz
+
+

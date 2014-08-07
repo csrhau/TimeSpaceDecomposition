@@ -20,8 +20,12 @@ void Calculation::diffuse(double dt_) {
   const double rx = dt_ / (dx * dx);
   const double ry = dt_ / (dy * dy);
   const int x_span = _mesh->get_node_augmented_col_count();
-  for (int i = 1; i < _mesh->get_node_core_row_count() + 1; ++i) {
-    for (int j = 1; j < _mesh->get_node_core_col_count() + 1; ++j) {
+  const int core_rows = _mesh->get_node_core_row_count();
+  const int core_cols = _mesh->get_node_core_col_count();
+  const int i_offset = _mesh->get_current_row_offset();
+  const int j_offset = _mesh->get_current_col_offset();
+  for (int i = i_offset; i < core_rows + i_offset; ++i) {
+    for (int j = j_offset; j < core_cols + j_offset; ++j) {
       const int center = i * x_span + j;
       const int top = (i - 1) * x_span + j;
       const int bottom = (i + 1) * x_span + j;

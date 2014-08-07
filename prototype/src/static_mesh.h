@@ -21,31 +21,21 @@ class StaticMesh : public DistributedMesh {
   int get_node_augmented_col_count() const;
   int get_node_core_cell_count() const;
   int get_node_augmented_cell_count() const;
-  double get_world_core_row_count() const;
-  double get_world_core_col_count() const;
-  // x, y signify physical (as opposed to logical) coordinates
-  double get_del_y() const;
-  double get_del_x() const;
+  int get_current_row_offset() const;
+  int get_current_col_offset() const;
+  int get_previous_row_offset() const;
+  int get_previous_col_offset() const;
+
   double get_core_row_y(int row_) const;
   double get_core_col_x(int col_) const;
   double get_y_coord(int row_) const;
   double get_x_coord(int col_) const;
-  // MPI specific things
-  bool has_top_neighbour() const;
-  bool has_bottom_neighbour() const;
-  bool has_left_neighbour() const;
-  bool has_right_neighbour() const;
 
  private:
-  const ConfigFile& _config;
-  const MPI_Comm _cart_comm;
+  double *_u0;
+  double *_u1;
   MPI_Datatype _col_type;
-  std::vector<int> _cart_coords;
   // core meaning not including boundaries, ghosts
-  int _world_core_row_count;
-  int _world_core_col_count;
-  double _world_height; // Corresponds to rows
-  double _world_width;  // Corresponds to cols
   int _node_core_row_count;
   int _node_core_col_count;
   double _core_origin_x; 
@@ -53,14 +43,6 @@ class StaticMesh : public DistributedMesh {
   // augmented meaning boundaries, ghosts are included
   int _node_augmented_row_count;
   int _node_augmented_col_count;
-  int _cart_rank;
-  const std::vector<int>& _dim_nodes;
-  double *_u0;
-  double *_u1;
-  int _top_rank_or_neg;
-  int _bottom_rank_or_neg;
-  int _left_rank_or_neg;
-  int _right_rank_or_neg;
   void exchange_boundaries();
 };
 #endif

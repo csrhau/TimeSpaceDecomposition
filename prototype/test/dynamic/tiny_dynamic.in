@@ -1,10 +1,10 @@
 debug true
 mesh_type dynamic
-logical_dimensions 100 100
+logical_dimensions 8 8
 physical_dimensions 100.0 100.0
 start_time 0.0
-end_time 554.08
-timestep 0.005
+end_time 0.2
+timestep 0.1
 subregions 20.1 20.1 80.1 80.1
-visualization_rate 200
-dim_nodes 4 1
+visualization_rate 1
+dim_nodes 2 1

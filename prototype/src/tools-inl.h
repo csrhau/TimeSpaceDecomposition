@@ -1,6 +1,7 @@
 #ifndef TOOLS_INL_H
 #define TOOLS_INL_H
 
+#include <iostream>
 #include <sys/time.h>
 #include <sys/times.h>
 #include <sys/resource.h>
@@ -29,7 +30,7 @@ inline int calculate_local_span(int dim_proc_,
                                 bool prograde_) {
   int span = calculate_local_span(dim_proc_, dim_procs_, global_span_);
   // As prograde is the initial case, prograde is equivalent to classic
-  if (!prograde_) {
+  if (!prograde_ && dim_procs_ > 1) {
     // On a retrograde step, we seek to pull back towards the origin.
     // This means that the origin will have one less row/col, and the 
     // proc at the furthest extent will have one more

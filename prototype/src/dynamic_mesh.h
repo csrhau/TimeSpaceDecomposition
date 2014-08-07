@@ -8,19 +8,19 @@ class DynamicMesh : public DistributedMesh {
  public:
   DynamicMesh(const ConfigFile& config_,
        MPI_Comm cart_comm_,
-       int row_nodes_,
-       int col_nodes_);
+       const std::vector<int>& dim_nodes_);
 
   virtual ~DynamicMesh();
   void advance();
   void reflect_boundary(int boundary_);
   double * get_u0();
   double * get_u1();
-  // x, y signify physical (as opposed to logical) coordinates
-  double get_del_x() const;
-  double get_del_y() const;
   double get_core_origin_x() const;
   double get_core_origin_y() const;
+  int get_current_row_offset() const;
+  int get_current_col_offset() const;
+  int get_previous_row_offset() const;
+  int get_previous_col_offset() const;
   double get_y_coord(int row_) const;
   double get_x_coord(int col_) const;
   int get_node_core_row_count() const;
@@ -29,51 +29,20 @@ class DynamicMesh : public DistributedMesh {
   int get_node_augmented_col_count() const;
   int get_node_core_cell_count() const;
   int get_node_augmented_cell_count() const;
-  bool has_top_neighbour() const;
-  bool has_bottom_neighbour() const;
-  bool has_left_neighbour() const;
-  bool has_right_neighbour() const;
-  // MPI specific things
-  bool has_top_neighbour() const;
-  bool has_bottom_neighbour() const;
-  bool has_left_neighbour() const;
-  bool has_right_neighbour() const;
 
  private:
   // TODO rip out any unused members!
-  const ConfigFile& _config;
-  const MPI_Comm _cart_comm;
-  int row_nodes_;
-  int col_nodes_;
   bool _prograde;
-  MPI_Datatype _col_type;
-  std::vector<int> _cart_coords;
+  double *_u0;
+  double *_u1;
   // core meaning not including boundaries, ghosts
-  int _world_core_row_count;
-  int _world_core_col_count;
-  double _world_height; // Corresponds to rows
-  double _world_width;  // Corresponds to cols
   int _node_core_row_count;
   int _node_core_col_count;
-  double _core_origin_x; 
-  double _core_origin_y;
+  double _core_origin_x; // Origin at start of prograde
+  double _core_origin_y; // Origin at start of prograde step
   // augmented meaning boundaries, ghosts are included
   int _node_augmented_row_count;
   int _node_augmented_col_count;
-  int _cart_rank;
-  double *_u0;
-  double *_u1;
-  int _top_rank_or_neg;
-  int _bottom_rank_or_neg;
-  int _left_rank_or_neg;
-  int _right_rank_or_neg;
   void exchange_boundaries();
-  void get_node_augmented_row_count() const;
-  void get_node_augmented_col_count() const;
-
-
-
-
-
 };
 #endif

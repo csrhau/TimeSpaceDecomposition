@@ -1,0 +1,11 @@
+debug true
+mesh_type static
+logical_dimensions 100 100
+physical_dimensions 100.0 100.0
+start_time 0.0
+end_time 700.0
+timestep 0.01
+subregions 20.1 20.1 80.1 80.1
+visualization_rate 50
+#dim_nodes 3 1
+# TODO dimension_nodes 1 4 # rows cols

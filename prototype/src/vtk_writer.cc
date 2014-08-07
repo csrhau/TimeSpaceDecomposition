@@ -1,6 +1,5 @@
 #include "vtk_writer.h"
 
-#include <iostream>
 #include <sstream>
 #include <fstream>
 
@@ -26,7 +25,6 @@ VtkWriter::VtkWriter(std::string basename, Mesh* mesh_, int world_rank_, int wor
 
 void VtkWriter::write(int step, double time)
 {
-    std::cout << "step " << step << " rank " << _world_rank << std::endl;
     // Master process writes out the .visit file to coordinate the .vtk files
     if (_world_rank == 0) {
       std::ofstream ofs;
@@ -78,8 +76,14 @@ void VtkWriter::writeVtk(int step, double time)
     file << "CYCLE 1 1 int" << std::endl;
     file << step << std::endl;
     // 2D - Note we need internals +1 due to fencepost effec
-    int horizontal_points = _mesh->get_node_core_col_count() + 1;
-    int vertical_points = _mesh->get_node_core_row_count() + 1;
+    const int core_rows = _mesh->get_node_core_row_count();
+    const int core_cols = _mesh->get_node_core_col_count();
+    const int core_cells = _mesh->get_node_core_cell_count();  
+    const int row_offset = _mesh->get_current_row_offset();
+    const int col_offset = _mesh->get_current_col_offset();
+
+    const int horizontal_points = core_rows + 1;
+    const int vertical_points = core_cols + 1;
     file << "DIMENSIONS " << horizontal_points << " " << vertical_points 
          << " 1" << std::endl;
 
@@ -97,22 +101,20 @@ void VtkWriter::writeVtk(int step, double time)
     file << "Z_COORDINATES 1 float" << std::endl;
     file << "0.0000" << std::endl;
 
-
-    file << "CELL_DATA " << _mesh->get_node_core_cell_count() << std::endl;
+    file << "CELL_DATA " << core_cells << std::endl;
 
     file << "FIELD FieldData 1" << std::endl;
 
-    file << "u 1 " << _mesh->get_node_core_cell_count() << " double" <<  std::endl;
+    file << "u 1 " << core_cells << " double" <<  std::endl;
 
     int x_span = _mesh->get_node_augmented_col_count();
     double *u0 = _mesh->get_u0();
     // N.B. Deal with padding
-    for (int i = 1; i < _mesh->get_node_core_row_count() + 1; ++i) {
-      for (int j = 1; j < _mesh->get_node_core_col_count() + 1; ++j) {
+    for (int i = row_offset; i < core_rows + row_offset; ++i) {
+      for (int j = col_offset; j < core_cols + col_offset; ++j) {
         file << u0[i * x_span + j] << " ";
       }
       file << std::endl;
     }
-
     file.close();
 }
